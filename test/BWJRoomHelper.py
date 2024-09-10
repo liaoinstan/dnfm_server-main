@@ -33,7 +33,7 @@ class Direction(Enum):
     RIGHT_BOTTOM = 7
 
 
-class RoomNumHelper(object):
+class BWJRoomHelper(object):
     def __init__(self):
         self.center = (convet(CENTER_POINT[0]), convet(CENTER_POINT[1]))
         self.offsetRoom = convet(OFFSET_ROOM)
@@ -122,7 +122,7 @@ class RoomNumHelper(object):
     def hasGone(self, d: Direction):
         return self.isWay(self.getRoomColor(d))
 
-    def calcuRoomNum(self, img0):
+    def parseRoomNum(self, img0):
         if img0 is None:
             return None
         if img0.shape[0] > img0.shape[1]:
@@ -135,11 +135,11 @@ class RoomNumHelper(object):
         elif not self.hasGone(Direction.LEFT) and not self.hasGone(Direction.LEFT_TOP) and not self.hasGone(Direction.LEFT_BOTTOM) and self.hasGone(Direction.TOP) and self.hasArrow(Direction.RIGHT):
             # 左边3个房间都没清理，且上面房间清理，且箭头朝右
             return 1
-        elif self.hasGone(Direction.LEFT) and self.hasGone(Direction.LEFT_TOP) and not self.hasGone(Direction.LEFT_BOTTOM):
-            # 左边和左上房间清理，且左下方没清理
+        elif self.hasGone(Direction.LEFT) and self.hasGone(Direction.LEFT_TOP) and not self.hasGone(Direction.LEFT_BOTTOM) and self.hasArrow(Direction.RIGHT):
+            # 左边和左上房间清理，且左下方没清理，且箭头朝右
             return 2
-        elif self.hasGone(Direction.LEFT) and not self.hasGone(Direction.LEFT_TOP) and self.hasArrow(Direction.TOP):
-            # 左边房间清理，左上房间没清理，且小箭头朝上
+        elif self.hasGone(Direction.LEFT) and self.hasArrow(Direction.TOP):
+            # 左边房间清理，且小箭头朝上
             return 3
         elif self.hasGone(Direction.BOTTOM) and not self.hasGone(Direction.RIGHT_BOTTOM) and self.hasArrow(Direction.RIGHT):
             # 下面房间清理，且右下房间没清理，且小箭头朝右
@@ -161,10 +161,10 @@ class RoomNumHelper(object):
             return -1
 
 
-roomNumHelper = RoomNumHelper()
+roomHelper = BWJRoomHelper()
 
 if __name__ == '__main__':
     import cv2
     img = cv2.imread('./screen1.jpg')
-    roomNum = roomNumHelper.calcuRoomNum(img)
+    roomNum = roomHelper.parseRoomNum(img)
     print("roomNum", roomNum)

@@ -3,7 +3,7 @@ import cv2
 from adbutils import adb
 import time
 import scrcpy
-from color import roomNumHelper
+from BWJRoomHelper import roomHelper
 import numpy as np
 
 windowWidth = 800
@@ -45,8 +45,13 @@ if __name__ == '__main__':
         
         # sadb.last_screen = np.rot90(sadb.last_screen, k=1)
 
-        roomNum = roomNumHelper.calcuRoomNum(sadb.last_screen)
-        print("roomNum",roomNum)
+        roomNum = roomHelper.parseRoomNum(sadb.last_screen)
+        if roomNum == 5:
+            print("roomNum",str(roomNum) + " (狮子头)")
+        elif roomNum == 8:
+            print("roomNum",str(roomNum) + " (BOSS)")
+        else:
+            print("roomNum",roomNum)
 
         cv2.imshow('screen', sadb.last_screen)
         # cv.waitKey(1)
