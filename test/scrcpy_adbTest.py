@@ -50,6 +50,8 @@ if __name__ == '__main__':
             print("roomNum",str(roomNum) + " (狮子头)")
         elif roomNum == 8:
             print("roomNum",str(roomNum) + " (BOSS)")
+        elif roomNum == 8:
+            print("roomNum",str(roomNum) + " (过图中)")
         else:
             print("roomNum",roomNum)
 

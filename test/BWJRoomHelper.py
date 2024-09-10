@@ -67,12 +67,18 @@ class BWJRoomHelper(object):
     def isBuff(self, color):
         return self.areColorsSimilar(color, self.buffColor)
 
+    def isBlack(self, color):
+        return self.areColorsSimilar(color, (0, 0, 0))
+
     def getColor(self, x, y):
         # 横屏模式下图片为(h,w,3)先取Y轴再取X轴
         return self.BGR2RGB(self.img[y, x])
 
     def BGR2RGB(self, color):
         return (color[2], color[1], color[0])
+
+    def isAllBlack(self):
+        return self.isBlack(self.getRoomColor(Direction.LEFT)) and self.isBlack(self.getRoomColor(Direction.TOP)) and self.isBlack(self.getRoomColor(Direction.RIGHT)) and self.isBlack(self.getRoomColor(Direction.BOTTOM))
 
     def getRoomColor(self, d: Direction):
         cx, cy = self.center[0], self.center[1]
@@ -156,9 +162,12 @@ class BWJRoomHelper(object):
         elif (not self.hasArrow(Direction.TOP) and not self.hasArrow(Direction.RIGHT) and not self.hasArrow(Direction.BOTTOM)) and (self.hasGone(Direction.LEFT) or self.hasBuff(Direction.LEFT)):
             # 上右下都没有箭头 && （左边房间清理 || 左边房间有Buff）
             return 8
+        elif self.isAllBlack():
+            # 全黑，过图中
+            return -1
         else:
             # 其他房间都不是，走错路了，跟着箭头返回
-            return -1
+            return -2
 
 
 roomHelper = BWJRoomHelper()
