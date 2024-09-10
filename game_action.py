@@ -6,6 +6,7 @@ import numpy as np
 from collections import deque
 import threading
 from adbutils import adb
+from scrcpy_adb import convetPoint
 
 
 
@@ -201,6 +202,57 @@ class GameAction:
                 time.sleep(0.001)
                 continue
             image,boxs = self.queue.get()
+            
+            print("image.shape",image.shape)
+            
+            centerMap = (2957,176)
+            leftMap = (2927,176)
+            topMap = (2957,146)
+            rightMap = (2987,176)
+            bottonMap = (2957,206)
+            
+            p = centerMap
+            x,y=convetPoint(p[0],p[1])
+            x = int(x)
+            y = int(y)
+            # print("img",image)
+            # print("x,y=",x,y)
+            color = image[y][x]
+            color = (color[2], color[1], color[0])
+            print("centerMapcolor",color)
+            
+            p = leftMap
+            x,y=convetPoint(p[0],p[1])
+            x = int(x)
+            y = int(y)
+            color = image[y][x]
+            color = (color[2], color[1], color[0])
+            print("leftMapcolor",color)
+            
+            p = topMap
+            x,y=convetPoint(p[0],p[1])
+            x = int(x)
+            y = int(y)
+            color = image[y][x]
+            color = (color[2], color[1], color[0])
+            print("topMapcolor",color)
+            
+            p = rightMap
+            x,y=convetPoint(p[0],p[1])
+            x = int(x)
+            y = int(y)
+            color = image[y][x]
+            color = (color[2], color[1], color[0])
+            print("rightMapcolor",color)
+            
+            p = bottonMap
+            x,y=convetPoint(p[0],p[1])
+            x = int(x)
+            y = int(y)
+            color = image[y][x]
+            color = (color[2], color[1], color[0])
+            print("bottonMapcolor",color)
+            
             if is_image_almost_black(image):
                 if self.pre_state == False:
                     print("过图")
@@ -275,9 +327,9 @@ class GameAction:
                 self.ctrl.move(0)
                 time.sleep(2)
                 # 获取连接的设备列表
-                adb.device().click(1563, 176)
+                adb.device().click(2814, 189)
                 time.sleep(1)
-                adb.device().click(1563, 176)
+                adb.device().click(2814, 189)
                 #这里的坐标换成自己的再次挑战所在的坐标就行
                 self.detect_retry =False
                 self.room_num = 0

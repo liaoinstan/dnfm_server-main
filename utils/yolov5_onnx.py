@@ -91,6 +91,7 @@ def NonMaximumSuppression(
     if isinstance(prediction, (list, tuple)):  # YOLOv5 model in validation model, output = (inference_out, loss_out)
         prediction = prediction[0]  # select only inference output
 
+    # print("xxxx1 shape",prediction.shape) #[1, 25200, 19]
     device = prediction.device
     mps = "mps" in device.type  # Apple MPS
     if mps:  # MPS not fully supported yet, convert tensors to CPU before NMS
@@ -98,6 +99,7 @@ def NonMaximumSuppression(
     bs = prediction.shape[0]  # batch size
     nc = prediction.shape[2] - nm - 5  # number of classes
     xc = prediction[..., 4] > conf_thres  # candidates
+    # print("xc.shape",xc.shape)#[1, 25200]
 
     # Settings
     # min_wh = 2  # (pixels) minimum box width and height
@@ -110,11 +112,21 @@ def NonMaximumSuppression(
 
     mi = 5 + nc  # mask start index
     output = [torch.zeros((0, 6 + nm), device=prediction.device)] * bs
+    
+    # print("xxxx2 shape",prediction.shape) #[1, 25200, 19]
+    
+    m_i = 0
+    s = time.time()
     for xi, x in enumerate(prediction):  # image index, image inference
+        # print("xi",xi)#0
+        # print("x.shape",x.shape)#[25200, 19]
+        m_i = m_i+1
         # Apply constraints
         # x[((x[..., 2:4] < min_wh) | (x[..., 2:4] > max_wh)).any(1), 4] = 0  # width-height
+        # print("xc.shape",xc.shape)#[1, 25200]
+        # print("xc",xc)#[[False, False, False,  ..., False, False, False]]
         x = x[xc[xi]]  # confidence
-
+        # print("x.shape",x.shape)#[191, 19]
         # Cat apriori labels if autolabelling
         if labels and len(labels[xi]):
             lb = labels[xi]
@@ -174,6 +186,11 @@ def NonMaximumSuppression(
         if mps:
             output[xi] = output[xi].to(device)
 
+    # print(f'遍历耗时{int((time.time() - s) * 1000)} ms') #0
+    # print("xxxx times:",m_i)#1
+    # print("xxxx2 output",len(output))#1
+    # print("xxxx2 output",len(output[0]))#9
+    # print("xxxx2 output",len(output[0][0]))#6
     return output
 def non_max_suppression(
     prediction,
@@ -302,13 +319,17 @@ class YOLOv5:
             if self.image_queue.empty():
                 time.sleep(0.005)
                 continue
+            sall = time.time()
             img = self.image_queue.get()
             image = Image.fromarray(cv2.cvtColor(img,cv2.COLOR_BGR2RGB))
             image,top_pad = resize_img(image)
             image_array = np.array(image).transpose((2, 0, 1))
             image_array = np.expand_dims(image_array, axis=0).astype(np.float32)
             inputs = image_array / 255.0
+            s = time.time()
             output = session.run(output_names, {input_name: inputs})
+            # print(f'匹配耗时{int((time.time() - s) * 1000)} ms')
+            # print("output shape:",len(output[0][0]))
             shape = (1,25200,19)
             output = np.resize(output[0], shape)
             output = self.from_numpy(output)
@@ -319,6 +340,7 @@ class YOLOv5:
             output[:,3] = (output[:,3] - top_pad)/(640-top_pad*2)
             self.infer_queue.put([img,output])
             self.show_queue.put([img,output])
+            # print(f'总共耗时{int((time.time() - sall) * 1000)} ms')
     def from_numpy(self,x):
         """Converts a NumPy array to a torch tensor, maintaining device compatibility."""
         return torch.from_numpy(x) if isinstance(x, np.ndarray) else x
