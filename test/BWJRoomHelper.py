@@ -2,9 +2,12 @@ import math
 from enum import Enum
 
 ########################################################
+#   只能在布万加副本内使用，目前只支持走布万加下路
 #   以下参数需要根据自己设备进行调整
 #   屏幕坐标可以在开发者选项中打开"指针位置"获取屏幕坐标
+#   核心业务逻辑在parseRoomNum方法中，其余均为私有工具方法
 #
+#   如果出现识别不准确的情况，请仔细检查参数配置是否正确
 #
 # 小地图中心点坐标（蓝色小人）
 CENTER_POINT = (2954, 174)
@@ -68,23 +71,22 @@ class BWJRoomHelper(object):
     def __hasColor(self, color, x, y):
         # return self.__areColorsSimilar(self.__getColor(x, y), color)
         # 先尝试从缓存中找是否先前已经查找过该点的颜色
-        if (x,y) in self.searchCache:
-            if self.__areColorsSimilar(color, self.searchCache[(x,y)]):
+        if (x, y) in self.searchCache:
+            if self.__areColorsSimilar(color, self.searchCache[(x, y)]):
                 return True
             else:
                 # 如果缓存中有记录，且不是当前要查找的颜色，也不用查询了，返回False
                 return False
-        
+
         # 缓存中没有，则开始查找
-        findColor = self.__findColorFormArea(color,x,y)
+        findColor = self.__findColorFormArea(color, x, y)
 
         # 如果查找到指定颜色，将坐标和颜色值写入缓存
         if findColor:
-            self.searchCache[(x,y)] = findColor
+            self.searchCache[(x, y)] = findColor
             return True
         else:
             return False
-
 
     def __BGR2RGB(self, color):
         return (color[2], color[1], color[0])
@@ -137,7 +139,7 @@ class BWJRoomHelper(object):
         if img0.shape[0] > img0.shape[1]:
             print("竖屏模式，忽略")
             return None
-        #
+        # 清除搜索缓存
         self.searchCache.clear()
         self.img = img0
         if not self.__hasGone(Direction.LEFT) and not self.__hasGone(Direction.LEFT_TOP) and not self.__hasGone(Direction.LEFT_BOTTOM) and self.__hasArrow(Direction.BOTTOM):
@@ -174,33 +176,35 @@ class BWJRoomHelper(object):
             # 其他房间都不是，走错路了，跟着箭头返回
             return -2
 
-    # 从屏幕指定位置附近区域查找指定颜色
+    # 查找以point为中心，半径为r的矩形区域内是否有指定颜色
     # color:要查找的颜色
     # point:指定屏幕坐标
-    # r:以point为中心，边长为r的矩形区域
+    # r:区域半径
     def __findColorFormArea(self, color, x, y, r=5):
         matrix = self.img
-        # print("matrix.shape:",matrix.shape,"x,y:",x,y,"color:",color)
         if x+r > matrix.shape[1]:
             print("设定的坐标X轴超过画布")
             return None
         if y+r > matrix.shape[0]:
             print("设定的坐标Y轴超过画布")
             return None
+        # 定义内部返回函数
 
-        def result(screenColor,x,y, log="init"):
-            # print(screenColor,x,y, log)
+        def result(screenColor):
             if self.__areColorsSimilar(screenColor, color):
                 return screenColor
+
+        ########################################################
+        # 螺旋矩阵算法，从中心点向外一层一层遍历
         # 中心点出现指定颜色的概率更高，所以从中心点螺旋向外遍历矩阵
-        # 矩阵长度
-        length = r*2+1
+        # 查找到指定颜色后立刻中断遍历
+        #
         # 最大圈数（中心点外有几圈）
         maxCircleNum = r
         # 初始化当前位置到中心点
         nowX, nowY = x, y
         # 第一步固定为中心点
-        value = result(self.__getColor(nowX, nowY),nowX, nowY)
+        value = result(self.__getColor(nowX, nowY))
         if value:
             return value
         # 如果一圈都没有（只有中心点），直接返回
@@ -209,44 +213,43 @@ class BWJRoomHelper(object):
         # 从第一圈遍历到最大圈
         for circleNum in fromTo(1, maxCircleNum):
             # 先向右一步
-            value = result(self.__getColor(nowX+1, nowY,),nowX+1, nowY)
+            value = result(self.__getColor(nowX+1, nowY,))
             if value:
                 return value
             nowX += 1
             # 向下走(圈数*2-1)步
             for i in fromTo(1, circleNum*2-1):
-                value = result(self.__getColor(nowX, nowY+i),nowX, nowY+i, "down")
+                value = result(self.__getColor(nowX, nowY+i))
                 if value:
                     return value
             nowY += circleNum*2-1
             # 向左走圈数*2步
             for i in fromTo(1, circleNum*2):
-                value = result(self.__getColor(nowX-i, nowY),nowX-i, nowY, "left")
+                value = result(self.__getColor(nowX-i, nowY))
                 if value:
                     return value
             nowX -= circleNum*2
             # 向上走圈数*2步
             for i in fromTo(1, circleNum*2):
-                value = result(self.__getColor(nowX, nowY-i),nowX, nowY-i, "up")
+                value = result(self.__getColor(nowX, nowY-i))
                 if value:
                     return value
             nowY -= circleNum*2
             # 向右走圈数*2步
             for i in fromTo(1, circleNum*2):
-                value = result(self.__getColor(nowX+i, nowY),nowX+i, nowY, "right")
+                value = result(self.__getColor(nowX+i, nowY))
                 if value:
                     return value
             nowX += circleNum*2
+        #
+        # 结束遍历
+        ########################################################
 
-    def test(self, img0):
-        self.img = img0
-        print(self.__hasGone(Direction.BOTTOM))
 
 roomHelper = BWJRoomHelper()
 
 if __name__ == '__main__':
     import cv2
     img = cv2.imread('test/screen1.jpg')
-    # roomNum = roomHelper.parseRoomNum(img)
-    # print("roomNum", roomNum)
-    roomHelper.test(img)
+    roomNum = roomHelper.parseRoomNum(img)
+    print("roomNum", roomNum)
