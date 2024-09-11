@@ -4,6 +4,7 @@ from adbutils import adb
 import time
 import scrcpy
 from BWJRoomHelper import roomHelper
+# from BWJRoomHelperOld import roomHelper
 import numpy as np
 
 windowWidth = 800
@@ -44,13 +45,15 @@ if __name__ == '__main__':
             continue
         
         # sadb.last_screen = np.rot90(sadb.last_screen, k=1)
+        
+        # roomHelper.__isBuff()
 
         roomNum = roomHelper.parseRoomNum(sadb.last_screen)
         if roomNum == 5:
-            print("roomNum",str(roomNum) + " (狮子头)")
+            print("roomNum",str(roomNum) + " (狮子头房)")
         elif roomNum == 8:
-            print("roomNum",str(roomNum) + " (BOSS)")
-        elif roomNum == 8:
+            print("roomNum",str(roomNum) + " (BOSS房)")
+        elif roomNum == -1:
             print("roomNum",str(roomNum) + " (过图中)")
         else:
             print("roomNum",roomNum)
