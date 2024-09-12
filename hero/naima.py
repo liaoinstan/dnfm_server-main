@@ -94,7 +94,7 @@ class Naima:
                 self.ctrl.reset()
                 time.sleep(wait)
                 self.skill("勇气祝福")
-                time.sleep(1.2)
+                time.sleep(0.5)
                 self.ctrl.move(335)
                 time.sleep(0.3)
                 self.skill("光芒烬盾")

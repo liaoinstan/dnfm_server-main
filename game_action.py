@@ -7,6 +7,7 @@ from collections import deque
 import threading
 from adbutils import adb
 from scrcpy_adb import convetPoint
+from BWJRoomHelperV2 import roomHelper
 
 
 
@@ -177,10 +178,12 @@ class GameAction:
         self.thread = threading.Thread(target=self.control)  # 创建线程，并指定目标函数
         self.thread.daemon = True  # 设置为守护线程（可选）
         self.thread.start()
+        self.hasKillSZT = False
         
     def reset(self):
         self.thread_run = False
         time.sleep(0.1)
+        self.hasKillSZT = False
         self.room_num = -1
         self.detect_retry = False
         self.pre_state = True
@@ -203,55 +206,74 @@ class GameAction:
                 continue
             image,boxs = self.queue.get()
             
-            print("image.shape",image.shape)
             
-            centerMap = (2957,176)
-            leftMap = (2927,176)
-            topMap = (2957,146)
-            rightMap = (2987,176)
-            bottonMap = (2957,206)
+            # print("boxs",boxs)
             
-            p = centerMap
-            x,y=convetPoint(p[0],p[1])
-            x = int(x)
-            y = int(y)
-            # print("img",image)
-            # print("x,y=",x,y)
-            color = image[y][x]
-            color = (color[2], color[1], color[0])
-            print("centerMapcolor",color)
+            # print("image.shape",image.shape)
             
-            p = leftMap
-            x,y=convetPoint(p[0],p[1])
-            x = int(x)
-            y = int(y)
-            color = image[y][x]
-            color = (color[2], color[1], color[0])
-            print("leftMapcolor",color)
+            # centerMap = (2957,176)
+            # leftMap = (2927,176)
+            # topMap = (2957,146)
+            # rightMap = (2987,176)
+            # bottonMap = (2957,206)
             
-            p = topMap
-            x,y=convetPoint(p[0],p[1])
-            x = int(x)
-            y = int(y)
-            color = image[y][x]
-            color = (color[2], color[1], color[0])
-            print("topMapcolor",color)
+            # p = centerMap
+            # x,y=convetPoint(p[0],p[1])
+            # x = int(x)
+            # y = int(y)
+            # # print("img",image)
+            # # print("x,y=",x,y)
+            # color = image[y][x]
+            # color = (color[2], color[1], color[0])
+            # print("centerMapcolor",color)
             
-            p = rightMap
-            x,y=convetPoint(p[0],p[1])
-            x = int(x)
-            y = int(y)
-            color = image[y][x]
-            color = (color[2], color[1], color[0])
-            print("rightMapcolor",color)
+            # p = leftMap
+            # x,y=convetPoint(p[0],p[1])
+            # x = int(x)
+            # y = int(y)
+            # color = image[y][x]
+            # color = (color[2], color[1], color[0])
+            # print("leftMapcolor",color)
             
-            p = bottonMap
-            x,y=convetPoint(p[0],p[1])
-            x = int(x)
-            y = int(y)
-            color = image[y][x]
-            color = (color[2], color[1], color[0])
-            print("bottonMapcolor",color)
+            # p = topMap
+            # x,y=convetPoint(p[0],p[1])
+            # x = int(x)
+            # y = int(y)
+            # color = image[y][x]
+            # color = (color[2], color[1], color[0])
+            # print("topMapcolor",color)
+            
+            # p = rightMap
+            # x,y=convetPoint(p[0],p[1])
+            # x = int(x)
+            # y = int(y)
+            # color = image[y][x]
+            # color = (color[2], color[1], color[0])
+            # print("rightMapcolor",color)
+            
+            # p = bottonMap
+            # x,y=convetPoint(p[0],p[1])
+            # x = int(x)
+            # y = int(y)
+            # color = image[y][x]
+            # color = (color[2], color[1], color[0])
+            # print("bottonMapcolor",color)
+            self.room_num = roomHelper.parseRoomNum(image)
+            if self.room_num == 5:
+                #去过5号房就表示击杀了狮子头
+                self.hasKillSZT = True
+            # 杀了狮子头后把房间号重排，兼容以前逻辑
+            if self.hasKillSZT:
+                if self.room_num == 4:
+                    self.room_num = 6
+                elif self.room_num == 6:
+                    self.room_num = 7
+                elif self.room_num == 7:
+                    self.room_num = 8
+                elif self.room_num == 8:
+                    self.room_num = 9
+            # self.room_num
+            # print("xxxx self.room_num",self.room_num)
             
             if is_image_almost_black(image):
                 if self.pre_state == False:
@@ -265,7 +287,11 @@ class GameAction:
                     time.sleep(0.5)
                 else:continue
             hero = boxs[boxs[:,5]==6][:,:4]
-            gate = boxs[boxs[:,5]==self.buwanjia[self.room_num]][:,:4]
+            if self.room_num == 4 and self.hasKillSZT:
+                #如果已经杀了狮子头，4号房就往右走
+                gate = boxs[boxs[:,5]==10][:,:4]
+            else:
+                gate = boxs[boxs[:,5]==self.buwanjia[self.room_num]][:,:4]
             arrow = boxs[boxs[:, 5] == 5][:,:4]
             equipment = [[detection[0], detection[1] + (detection[3] - detection[1]), detection[2], detection[3] + (detection[3] - detection[1]), detection[4], detection[5]]
                         for detection in boxs if detection[5] == 4 and detection[4] > 0.3]
@@ -276,7 +302,7 @@ class GameAction:
             outprint = ''
             if self.pre_state == True :
                 if len(hero) > 0:#记录房间号
-                    self.room_num += 1
+                    # self.room_num += 1
                     self.pre_state = False
                     print("房间号：",self.room_num)
                     print("目标",self.buwanjia[self.room_num])
@@ -333,6 +359,7 @@ class GameAction:
                 #这里的坐标换成自己的再次挑战所在的坐标就行
                 self.detect_retry =False
                 self.room_num = 0
+                self.hasKillSZT = False
                 hero_track = deque()
                 hero_track.appendleft([0,0])
             else :

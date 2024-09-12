@@ -3,7 +3,7 @@ import cv2
 from adbutils import adb
 import time
 import scrcpy
-from BWJRoomHelper import roomHelper
+from test.BWJRoomHelperV2 import roomHelper
 # from BWJRoomHelperOld import roomHelper
 import numpy as np
 
