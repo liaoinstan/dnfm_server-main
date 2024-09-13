@@ -61,6 +61,8 @@ class GameControl:
             self.adb.touch_down(x, y,2)
         else:
             self.adb.touch_move(x, y,2)
+            
+    #参数name：skill3
     def skill(self, name:str, t: float = 0.01):
         if isinstance(self.config[name], str):
             self.Roulette(name)

@@ -8,6 +8,7 @@ import threading
 from adbutils import adb
 from scrcpy_adb import convetPoint
 from BWJRoomHelperV2 import roomHelper
+import random
 
 
 
@@ -106,7 +107,7 @@ def calculate_angle(box1, box2):
     return adjusted_angle
 def calculate_gate_angle(point, gate): 
     center1 = point
-    center2 = ((gate[0]+gate[2])/2,(gate[3]-gate[1])*0.65+gate[1])
+    center2 = ((gate[0]+gate[2])/2,(gate[3]-gate[1])*0.65+gate[1]) #计算门的重合点，水平方向取x轴中心，y轴方法为上65%下35%位置
     delta_x = center2[0] - center1[0]# 计算相对角度（以水平轴为基准）
     delta_y = center2[1] - center1[1]
     angle = math.atan2(delta_y, delta_x)
@@ -168,17 +169,18 @@ class GameAction:
         self.queue = queue
         self.ctrl = ctrl
         self.detect_retry = False
-        self.pre_state = True
+        self.pre_state = True #是否过图中
         self.stop_event = True
         self.reset_event = False
         self.control_attack = Naima(ctrl)
         self.room_num = -1
-        self.buwanjia = [8,10,10,11,9,10,10,10,10,10,10,10,10,10]
+        self.buwanjia = [8,10,10,11,9,10,10,10,10,10,8,8]
         self.thread_run = True
         self.thread = threading.Thread(target=self.control)  # 创建线程，并指定目标函数
         self.thread.daemon = True  # 设置为守护线程（可选）
         self.thread.start()
         self.hasKillSZT = False
+        self.timeOut = 0
         
     def reset(self):
         self.thread_run = False
@@ -190,6 +192,7 @@ class GameAction:
         self.thread_run = True
         self.thread = threading.Thread(target=self.control)  # 创建线程，并指定目标函数
         self.thread.daemon = True  # 设置为守护线程（可选）
+        self.timeOut = 0
         self.thread.start()
     def control(self):
         last_room_pos = []
@@ -206,76 +209,41 @@ class GameAction:
                 continue
             image,boxs = self.queue.get()
             
+            ###############################
+            # 技能测试
+            # self.control_attack.skill("勇气祝福")
+            # return
+            ###############################
             
-            # print("boxs",boxs)
-            
-            # print("image.shape",image.shape)
-            
-            # centerMap = (2957,176)
-            # leftMap = (2927,176)
-            # topMap = (2957,146)
-            # rightMap = (2987,176)
-            # bottonMap = (2957,206)
-            
-            # p = centerMap
-            # x,y=convetPoint(p[0],p[1])
-            # x = int(x)
-            # y = int(y)
-            # # print("img",image)
-            # # print("x,y=",x,y)
-            # color = image[y][x]
-            # color = (color[2], color[1], color[0])
-            # print("centerMapcolor",color)
-            
-            # p = leftMap
-            # x,y=convetPoint(p[0],p[1])
-            # x = int(x)
-            # y = int(y)
-            # color = image[y][x]
-            # color = (color[2], color[1], color[0])
-            # print("leftMapcolor",color)
-            
-            # p = topMap
-            # x,y=convetPoint(p[0],p[1])
-            # x = int(x)
-            # y = int(y)
-            # color = image[y][x]
-            # color = (color[2], color[1], color[0])
-            # print("topMapcolor",color)
-            
-            # p = rightMap
-            # x,y=convetPoint(p[0],p[1])
-            # x = int(x)
-            # y = int(y)
-            # color = image[y][x]
-            # color = (color[2], color[1], color[0])
-            # print("rightMapcolor",color)
-            
-            # p = bottonMap
-            # x,y=convetPoint(p[0],p[1])
-            # x = int(x)
-            # y = int(y)
-            # color = image[y][x]
-            # color = (color[2], color[1], color[0])
-            # print("bottonMapcolor",color)
+            card = boxs[boxs[:,5]==3][:,:4]
+            if len(card)>=8:
+                time.sleep(1)
+                self.ctrl.click(0.25*image.shape[0],0.25*image.shape[1])
+                self.detect_retry = True
+                print("已检测到卡牌", self.detect_retry)
+                time.sleep(6)
+
             self.room_num = roomHelper.parseRoomNum(image)
             if self.room_num == 5:
                 #去过5号房就表示击杀了狮子头
                 self.hasKillSZT = True
-            # 杀了狮子头后把房间号重排，兼容以前逻辑
-            if self.hasKillSZT:
-                if self.room_num == 4:
-                    self.room_num = 6
-                elif self.room_num == 6:
+            # 杀了狮子头后把房间号重排，以兼容以前的过图逻辑
+            # 以前的逻辑因为4号房会经过两次，击杀狮子头出来后4号被重新编为6号房，之后的6,7,8分别为7,8,9
+            if self.hasKillSZT and self.room_num == 4:
+                self.room_num = 6
+            else:
+                if self.room_num == 6:
                     self.room_num = 7
                 elif self.room_num == 7:
                     self.room_num = 8
                 elif self.room_num == 8:
                     self.room_num = 9
-            # self.room_num
-            # print("xxxx self.room_num",self.room_num)
+                elif self.room_num == 9:
+                    self.room_num = 10
+                elif self.room_num == 10:
+                    self.room_num = 11
             
-            if is_image_almost_black(image):
+            if self.room_num == -1 or self.room_num == -2:
                 if self.pre_state == False:
                     print("过图")
                     last_room_pos = hero_track[0]
@@ -283,9 +251,24 @@ class GameAction:
                     hero_track.appendleft([1-last_room_pos[0],1-last_room_pos[1]])
                     last_angle = 0
                     self.ctrl.reset()
+                    self.timeOut = 0
                     self.pre_state = True
                     time.sleep(0.5)
-                else:continue
+                    continue
+                elif self.detect_retry:
+                    # 已通关，不再检测房间
+                    pass
+                else:
+                    continue
+            
+            if self.pre_state == True :
+                if len(hero) > 0:
+                    self.pre_state = False
+                    print("房间号：",self.room_num)
+                    print("目标",self.directionOfDoorNum(self.buwanjia[self.room_num]))
+                else:
+                    continue
+                
             hero = boxs[boxs[:,5]==6][:,:4]
             if self.room_num == 4 and self.hasKillSZT:
                 #如果已经杀了狮子头，4号房就往右走
@@ -296,28 +279,28 @@ class GameAction:
             equipment = [[detection[0], detection[1] + (detection[3] - detection[1]), detection[2], detection[3] + (detection[3] - detection[1]), detection[4], detection[5]]
                         for detection in boxs if detection[5] == 4 and detection[4] > 0.3]
             monster = boxs[boxs[:,5]<=2][:,:4]
-            card = boxs[boxs[:,5]==3][:,:4]
             diamond = boxs[boxs[:,5]==13][:,:4]
             angle = 0
             outprint = ''
-            if self.pre_state == True :
-                if len(hero) > 0:#记录房间号
-                    # self.room_num += 1
-                    self.pre_state = False
-                    print("房间号：",self.room_num)
-                    print("目标",self.buwanjia[self.room_num])
-                else:
-                    continue
             self.calculate_hero_pos(hero_track,hero)#计算英雄位置
-            if len(card)>=8:
+            # 计算操作是否超时
+            if self.timeOut == 0 or self.detect_retry:
+                waitTime = 0
+            else:
+                waitTime = int((time.time() - self.timeOut) * 1000) 
+            # 超时补救措施
+            if waitTime > 5000:
+                outprint = '卡位补救措施'
+                random_angle = random.randint(0, 360)
+                print('\n检测到卡位,尝试脱离卡位,角度:',random_angle, end='\n')
+                self.ctrl.attack(False) 
+                self.ctrl.move(random_angle)
                 time.sleep(1)
-                self.ctrl.click(0.25*image.shape[0],0.25*image.shape[1])
-                self.detect_retry = True
-                print("已检测到卡牌", self.detect_retry)
-                time.sleep(6)
-            if len(monster)>0:
+                self.timeOut = 0
+            elif len(monster)>0:
                 outprint = '有怪物'
                 angle = self.control_attack.control(hero_track[0],image,boxs,self.room_num)
+                self.timeOut = 0
             elif len(equipment)>0:
                 outprint = '有材料'
                 if len(gate)>0:
@@ -329,6 +312,7 @@ class GameAction:
                     angle = calculate_point_to_box_angle(hero_track[0],close_item)
                 self.ctrl.attack(False)
                 self.ctrl.move(angle)
+                self.timeOut = 0
             elif len(gate)>0:
                 outprint = '有门'
                 if self.buwanjia[self.room_num] == 9:#左门
@@ -341,12 +325,16 @@ class GameAction:
                     angle = calculate_point_to_box_angle(hero_track[0],close_gate)
                     self.ctrl.attack(False)
                     self.ctrl.move(angle)
+                if self.timeOut == 0:
+                    self.timeOut = time.time()
             elif len(arrow)>0 and self.room_num != 4:
                 outprint = '有箭头'
                 close_arrow,distance = find_closest_or_second_closest_box(arrow,hero_track[0])
                 angle = calculate_point_to_box_angle(hero_track[0],close_arrow)
                 self.ctrl.move(angle)
                 self.ctrl.attack(False)
+                if self.timeOut == 0:
+                    self.timeOut = time.time()
             elif self.detect_retry == True:
                 #重新挑战：自行发挥
                 print("检测再次挑战")
@@ -360,6 +348,7 @@ class GameAction:
                 self.detect_retry =False
                 self.room_num = 0
                 self.hasKillSZT = False
+                self.timeOut = 0
                 hero_track = deque()
                 hero_track.appendleft([0,0])
             else :
@@ -369,8 +358,14 @@ class GameAction:
                 else:
                     angle = calculate_angle_to_box(hero_track[0],[0.5,0.75])
                 self.ctrl.move(angle)
-                self.ctrl.attack(False)
-            print(f"\r当前进度:{outprint},角度{angle}，位置{hero_track[0]}", end="")
+                self.ctrl.attack(False) 
+            waitStr = waitTime = f"{waitTime} ms" if waitTime <=5000 else "超时"
+            if time == 0:
+                print("\r", end='')
+                print(f"\r当前进度:{outprint},角度{int(angle):04d}，位置{hero_track[0]}", end="")
+            else:
+                print("\r", end='')
+                print(f"\r当前进度:{outprint},角度{int(angle):04d}，位置{hero_track[0]}，行动时间:{waitStr} ", end="")
     def calculate_hero_pos(self,hero_track,boxs):
         if len(boxs)==0:
             None
@@ -382,3 +377,12 @@ class GameAction:
                     hero_track.appendleft(box)
                     return
                 hero_track.appendleft(hero_track[0])
+    def directionOfDoorNum(self, doorNum):
+        if doorNum == 8:
+            return "向下"
+        elif doorNum == 9:
+            return "向左"
+        elif doorNum == 10:
+            return "向右"
+        elif doorNum == 11:
+            return "向上"

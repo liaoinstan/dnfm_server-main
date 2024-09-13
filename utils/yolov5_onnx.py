@@ -329,7 +329,6 @@ class YOLOv5:
             s = time.time()
             output = session.run(output_names, {input_name: inputs})
             # print(f'匹配耗时{int((time.time() - s) * 1000)} ms')
-            # print("output shape:",len(output[0][0]))
             shape = (1,25200,19)
             output = np.resize(output[0], shape)
             output = self.from_numpy(output)
@@ -340,7 +339,6 @@ class YOLOv5:
             output[:,3] = (output[:,3] - top_pad)/(640-top_pad*2)
             self.infer_queue.put([img,output])
             self.show_queue.put([img,output])
-            # print(f'总共耗时{int((time.time() - sall) * 1000)} ms')
     def from_numpy(self,x):
         """Converts a NumPy array to a torch tensor, maintaining device compatibility."""
         return torch.from_numpy(x) if isinstance(x, np.ndarray) else x

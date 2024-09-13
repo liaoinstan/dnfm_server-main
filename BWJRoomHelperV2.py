@@ -1,5 +1,6 @@
 import math
 from enum import Enum
+from config import CENTER_POINT,OFFSET_ROOM,OFFSET_ARROW,RATE
 
 ########################################################
 #   只能在布万加副本内使用，目前只支持走布万加下路
@@ -10,13 +11,13 @@ from enum import Enum
 #   如果出现识别不准确的情况，请仔细检查参数配置是否正确
 #
 # 小地图中心点坐标（蓝色小人）
-CENTER_POINT = (2954, 174)
+# CENTER_POINT = (2954, 174)
 # 小地图中心点距相邻房间中心点距离（=房间直径）
-OFFSET_ROOM = 77
+# OFFSET_ROOM = 77
 # 小地图中心点距地图绿色小箭头中心点距离
-OFFSET_ARROW = 53
+# OFFSET_ARROW = 53
 # 游戏窗口宽度（画布宽） / 设备屏幕真实宽度(屏幕分辨率)
-RATE = 800 / 3200
+# RATE = 800 / 3200
 #
 ########################################################
 
@@ -44,6 +45,8 @@ class BWJRoomHelper(object):
         self.arrowColor = (99, 250, 14)
         # Buff图标颜色
         self.buffColor = (9, 154, 55)
+        # 精英怪图标颜色
+        self.mosterColor = (84, 56, 245)
         # 缓存，避免重复查找
         self.searchCache = {}
         # 是否开启区域查找（不开启只会查找指定的点，开启会查找以该点为中心11*11像素内的区域）
@@ -123,6 +126,11 @@ class BWJRoomHelper(object):
     def __hasBuff(self, d: Direction):
         x, y = self.__getPositionByDirection(d, self.offsetRoom)
         return self.__hasColor(self.buffColor, x, y)
+    
+    # 某个方向是否有精英怪
+    def __hasMoster(self, d: Direction):
+        x, y = self.__getPositionByDirection(d, self.offsetRoom)
+        return self.__hasColor(self.mosterColor, x, y)
 
     # 是否清理某个方向的房间
     def __hasGone(self, d: Direction):
@@ -139,8 +147,11 @@ class BWJRoomHelper(object):
         # 清除搜索缓存
         self.searchCache.clear()
         self.img = img0
-        if not self.__hasGone(Direction.LEFT) and not self.__hasGone(Direction.LEFT_TOP) and not self.__hasGone(Direction.LEFT_BOTTOM) and self.__hasArrow(Direction.BOTTOM):
+        # if not self.__hasGone(Direction.LEFT) and not self.__hasGone(Direction.LEFT_TOP) and not self.__hasGone(Direction.LEFT_BOTTOM) and self.__hasArrow(Direction.BOTTOM):
             # 左边3个房间都没清理，且箭头朝下
+            # return 0
+        if self.__hasArrow(Direction.BOTTOM) and (self.__hasGone(Direction.RIGHT) or self.__hasBuff(Direction.RIGHT) or self.__hasMoster(Direction.RIGHT)):
+            # 箭头朝下，且右边房间已清理或有Buff或有精英怪
             return 0
         elif not self.__hasGone(Direction.LEFT) and not self.__hasGone(Direction.LEFT_TOP) and not self.__hasGone(Direction.LEFT_BOTTOM) and self.__hasGone(Direction.TOP) and self.__hasArrow(Direction.RIGHT):
             # 左边3个房间都没清理，且上面房间清理，且箭头朝右
@@ -151,11 +162,11 @@ class BWJRoomHelper(object):
         elif self.__hasGone(Direction.LEFT) and self.__hasArrow(Direction.TOP):
             # 左边房间清理，且小箭头朝上
             return 3
-        elif self.__hasGone(Direction.BOTTOM) and not self.__hasGone(Direction.RIGHT_BOTTOM) and self.__hasArrow(Direction.RIGHT):
-            # 下面房间清理，且右下房间没清理，且小箭头朝右
+        elif self.__hasGone(Direction.BOTTOM) and (not self.__hasGone(Direction.RIGHT_BOTTOM) and not self.__hasBuff(Direction.RIGHT_BOTTOM) and not self.__hasMoster(Direction.RIGHT_BOTTOM)) and self.__hasArrow(Direction.RIGHT):
+            # 下面房间清理，且右下房间没清理且没Buff没精英怪，且小箭头朝右
             return 4
-        elif self.__hasGone(Direction.BOTTOM) and self.__hasGone(Direction.LEFT_BOTTOM) and self.__hasGone(Direction.RIGHT_BOTTOM):
-            # 狮子头，下方3个房间都清理
+        elif self.__hasGone(Direction.BOTTOM) and self.__hasGone(Direction.LEFT_BOTTOM) and self.__hasGone(Direction.RIGHT_BOTTOM) and self.__hasArrow(Direction.RIGHT):
+            # 狮子头，下方3个房间都清理，且小箭头朝右
             return 5
         elif self.__hasGone(Direction.LEFT) and self.__hasGone(Direction.LEFT_BOTTOM) and not self.__hasGone(Direction.BOTTOM):
             # 左边和左下房间清理，且下方没清理
@@ -166,11 +177,17 @@ class BWJRoomHelper(object):
         elif (not self.__hasArrow(Direction.TOP) and not self.__hasArrow(Direction.RIGHT) and not self.__hasArrow(Direction.BOTTOM)) and (self.__hasGone(Direction.LEFT) or self.__hasBuff(Direction.LEFT)):
             # 上右下都没有箭头 && （左边房间清理 || 左边房间有Buff）
             return 8
+        elif self.__hasGone(Direction.BOTTOM) and self.__hasArrow(Direction.RIGHT) and (self.__hasGone(Direction.RIGHT_BOTTOM) or self.__hasBuff(Direction.RIGHT_BOTTOM) or self.__hasMoster(Direction.RIGHT_BOTTOM)):
+            # 下面房间清理，且小箭头朝右，且右下房间已清理或有Buff或有精英怪
+            return 9
+        elif self.__hasArrow(Direction.BOTTOM) and self.__hasGone(Direction.BOTTOM):
+            # 下方房间清理过，并且箭头朝下
+            return 10
         elif self.__isAllBlack():
             # 全黑，过图中
             return -1
         else:
-            # 其他房间都不是，走错路了，跟着箭头返回
+            # 没有检查到任何已经定义的房间
             return -2
 
     # 查找以point为中心，半径为r的矩形区域内是否有指定颜色

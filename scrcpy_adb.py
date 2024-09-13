@@ -3,15 +3,13 @@ import cv2
 from adbutils import adb
 import time
 import scrcpy
-
-windowWidth = 800
-deviceWidth = 3200
+from config import WINDOW_WIDTH, RATE
 
 
 class ScrcpyADB:
     def __init__(self, image_queue, max_fps=15):
         devices = adb.device_list()
-        client = scrcpy.Client(device=devices[0], max_width=windowWidth, max_fps=max_fps, block_frame=True)
+        client = scrcpy.Client(device=devices[0], max_width=WINDOW_WIDTH, max_fps=max_fps, block_frame=True)
         print(devices, client)
         client.add_listener(scrcpy.EVENT_FRAME, self.on_frame)
         client.start(threaded=True)
@@ -44,6 +42,8 @@ class ScrcpyADB:
         move_step_length: int = 5,
         move_steps_delay: float = 0.005,
     ):
+        start_x, start_y = convetPoint(start_x, start_y)
+        end_x, end_y = convetPoint(end_x, end_y)
         self.client.control.swipe(start_x, start_y, end_x, end_y, move_step_length, move_steps_delay)
 
     def tap(self, x: int or float, y: int or float):
@@ -54,15 +54,10 @@ class ScrcpyADB:
     def on_frame(self, frame: cv2.Mat):
 
         if frame is not None:
-            # print("xxx shape:",frame.shape)
-            # 640,288,3
-            # 3200,1440,3
             self.queue.put(frame)
-            # pass
 
 def convetPoint(x, y):
-    rate = windowWidth/deviceWidth
-    return x*rate, y*rate
+    return x*RATE, y*RATE
 
 
 if __name__ == '__main__':
