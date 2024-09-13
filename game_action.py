@@ -221,30 +221,35 @@ class GameAction:
                 self.ctrl.click(0.25*image.shape[0],0.25*image.shape[1])
                 self.detect_retry = True
                 print("已检测到卡牌", self.detect_retry)
-                time.sleep(6)
+                time.sleep(3)
 
-            self.room_num = roomHelper.parseRoomNum(image)
-            if self.room_num == 5:
+            room_num = roomHelper.parseRoomNum(image)
+            # print("room_num",room_num)
+            if room_num == 5:
                 #去过5号房就表示击杀了狮子头
                 self.hasKillSZT = True
             # 杀了狮子头后把房间号重排，以兼容以前的过图逻辑
             # 以前的逻辑因为4号房会经过两次，击杀狮子头出来后4号被重新编为6号房，之后的6,7,8分别为7,8,9
-            if self.hasKillSZT and self.room_num == 4:
-                self.room_num = 6
+            if self.hasKillSZT and room_num == 4:
+                room_num = 6
             else:
-                if self.room_num == 6:
-                    self.room_num = 7
-                elif self.room_num == 7:
-                    self.room_num = 8
-                elif self.room_num == 8:
-                    self.room_num = 9
-                elif self.room_num == 9:
-                    self.room_num = 10
-                elif self.room_num == 10:
-                    self.room_num = 11
+                if room_num == 6:
+                    room_num = 7
+                elif room_num == 7:
+                    room_num = 8
+                elif room_num == 8:
+                    room_num = 9
+                elif room_num == 9:
+                    room_num = 10
+                elif room_num == 10:
+                    room_num = 11
+            if self.detect_retry:
+                # 已通关，不再检测房间
+                room_num = 9
             
-            if self.room_num == -1 or self.room_num == -2:
-                if self.pre_state == False:
+            if room_num == -1 or room_num == -2:
+                if self.room_num != -1 and self.room_num != -2:
+                    self.room_num = room_num
                     print("过图")
                     last_room_pos = hero_track[0]
                     hero_track = deque()
@@ -252,24 +257,20 @@ class GameAction:
                     last_angle = 0
                     self.ctrl.reset()
                     self.timeOut = 0
-                    self.pre_state = True
                     time.sleep(0.5)
-                    continue
-                elif self.detect_retry:
-                    # 已通关，不再检测房间
-                    pass
-                else:
-                    continue
+                continue
             
-            if self.pre_state == True :
+            hero = boxs[boxs[:,5]==6][:,:4]
+            if self.room_num != room_num :
+                self.room_num = room_num
                 if len(hero) > 0:
                     self.pre_state = False
                     print("房间号：",self.room_num)
                     print("目标",self.directionOfDoorNum(self.buwanjia[self.room_num]))
                 else:
+                    print("异常：没检测到英雄")
                     continue
                 
-            hero = boxs[boxs[:,5]==6][:,:4]
             if self.room_num == 4 and self.hasKillSZT:
                 #如果已经杀了狮子头，4号房就往右走
                 gate = boxs[boxs[:,5]==10][:,:4]
