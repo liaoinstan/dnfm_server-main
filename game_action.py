@@ -8,6 +8,7 @@ import threading
 from adbutils import adb
 from BWJRoomHelperV2 import roomHelper
 import random
+from config import AGAIN
 
 
 
@@ -245,6 +246,11 @@ class GameAction:
             if self.detect_retry:
                 # 已通关，不再检测房间
                 room_num = 9
+                
+            direction = self.buwanjia[room_num]
+            if not self.hasKillSZT and room_num == 7:
+                # 如果还没打狮子头就意外进了7号房，那么向左边走
+                direction = 9
             
             if room_num == -1 or room_num == -2:
                 if self.room_num != -1 and self.room_num != -2:
@@ -262,12 +268,12 @@ class GameAction:
             hero = boxs[boxs[:,5]==6][:,:5]
             if self.room_num != room_num :
                 if (self.room_num>=0):
-                    print("纠正当前房间号")
+                    print(f"\n【房间识别异常】 纠正当前房间号：{self.room_num} -> {room_num}")
                 self.room_num = room_num
                 if len(hero) > 0:
                     self.pre_state = False
                     print("房间号：",self.room_num)
-                    print("目标",self.directionOfDoorNum(self.buwanjia[self.room_num]))
+                    print("目标",self.directionOfDoorNum(direction))
                 else:
                     print("异常：没检测到英雄")
                     continue
@@ -276,7 +282,7 @@ class GameAction:
                 #如果已经杀了狮子头，4号房就往右走
                 gate = boxs[boxs[:,5]==10][:,:4]
             else:
-                gate = boxs[boxs[:,5]==self.buwanjia[self.room_num]][:,:4]
+                gate = boxs[boxs[:,5]==direction][:,:4]
             arrow = boxs[boxs[:, 5] == 5][:,:4]
             equipment = [[detection[0], detection[1] + (detection[3] - detection[1]), detection[2], detection[3] + (detection[3] - detection[1]), detection[4], detection[5]]
                         for detection in boxs if detection[5] == 4 and detection[4] > 0.3]
@@ -317,7 +323,7 @@ class GameAction:
                 self.timeOut = 0
             elif len(gate)>0:
                 outprint = '有门'
-                if self.buwanjia[self.room_num] == 9:#左门
+                if direction == 9:#左门
                     close_gate,distance = find_close_point_to_box(gate,hero_track[0])
                     angle = calculate_gate_angle(hero_track[0],close_gate)
                     self.ctrl.attack(False)
@@ -343,9 +349,9 @@ class GameAction:
                 self.ctrl.move(0)
                 time.sleep(2)
                 # 获取连接的设备列表
-                adb.device().click(2814, 189)
+                adb.device().click(*AGAIN)
                 time.sleep(1)
-                adb.device().click(2814, 189)
+                adb.device().click(*AGAIN)
                 #这里的坐标换成自己的再次挑战所在的坐标就行
                 self.detect_retry =False
                 self.room_num = 0

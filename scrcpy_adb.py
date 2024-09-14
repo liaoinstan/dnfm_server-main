@@ -9,13 +9,15 @@ import re
 from BWJRoomHelperV2 import roomHelper
 
 
-
 class ScrcpyADB:
     def __init__(self, image_queue, max_fps=15):
         # 获取adb设备列表
         devices = adb.device_list()
         # 取第一台为游戏设备
-        client = scrcpy.Client(device=devices[0], max_width=WINDOW_WIDTH, max_fps=max_fps, block_frame=True)
+        if WINDOW_WIDTH == 0:
+            client = scrcpy.Client(device=devices[0], max_fps=max_fps, block_frame=True)
+        else:
+            client = scrcpy.Client(device=devices[0], max_width=WINDOW_WIDTH, max_fps=max_fps, block_frame=True)
         print(devices, client)
         # 发送adb命令获取物理屏幕分辨率
         process = subprocess.Popen("adb shell wm size", shell=True, stdout=subprocess.PIPE)
@@ -25,10 +27,13 @@ class ScrcpyADB:
             print(output.decode())
             result = re.search(r'\d{4}x(\d{4})', output.decode())
             # 初始化
-            self.rate = WINDOW_WIDTH/int(result.group(1))
+            if WINDOW_WIDTH == 0:
+                self.rate = 1
+            else:
+                self.rate = WINDOW_WIDTH/int(result.group(1))
             roomHelper.init(self.rate)
         if error:
-            print("设备异常:",error.decode())
+            print("设备异常:", error.decode())
             return
         # 添加数据流回调
         client.add_listener(scrcpy.EVENT_FRAME, self.on_frame)
@@ -38,7 +43,7 @@ class ScrcpyADB:
         self.last_screen = None
         self.frame_idx = -1
         self.queue = image_queue
-        
+
     def convetPoint(self, x, y):
         return x*self.rate, y*self.rate
 

@@ -7,6 +7,8 @@ from game_action import GameAction
 import queue
 import time
 import os
+from ImageUtil import drawMap
+from BWJRoomHelperV2 import roomHelper
 
 class AutoCleaningQueue(queue.Queue):
     def put(self, item, block=True, timeout=None):
@@ -36,6 +38,7 @@ if __name__ == '__main__':
             cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
             cv2.putText(image, "{:.2f}".format(conf), (int(x1), int(y1-10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2)
             cv2.putText(image, yolo.label[int(label)], (int(x1), int(y1-30)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2)
+        roomHelper.drawMap(image)
         # image = cv2.resize(image,(1800,int(image.shape[0]*1800/image.shape[1])))
         # 创建按钮区域
         button_panel_width = 100
