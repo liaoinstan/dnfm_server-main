@@ -174,14 +174,16 @@ class GameAction:
         self.reset_event = False
         self.control_attack = Naima(ctrl)
         self.room_num = -1
+        self.hasKillSZT = False
+        self.timeOut = 0
+        self.stopFlag = False
         self.buwanjia = [8,10,10,11,9,10,10,10,10,10,8,8]
         self.thread_run = True
         self.thread = threading.Thread(target=self.control)  # 创建线程，并指定目标函数
         self.thread.daemon = True  # 设置为守护线程（可选）
         self.thread.start()
-        self.hasKillSZT = False
-        self.timeOut = 0
-        
+    def stop(self):
+        self.stopFlag = True
     def reset(self):
         self.thread_run = False
         time.sleep(0.1)
@@ -200,6 +202,8 @@ class GameAction:
         hero_track.appendleft([0,0])
         last_angle = 0
         while self.thread_run:
+            if self.stopFlag:
+                break
             if self.stop_event:
                 time.sleep(0.001)
                 self.ctrl.reset()

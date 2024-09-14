@@ -43,6 +43,10 @@ class ScrcpyADB:
         self.last_screen = None
         self.frame_idx = -1
         self.queue = image_queue
+        
+    def stop(self):
+        self.client.stop()        
+
 
     def convetPoint(self, x, y):
         return x*self.rate, y*self.rate

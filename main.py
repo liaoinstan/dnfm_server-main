@@ -7,7 +7,6 @@ from game_action import GameAction
 import queue
 import time
 import os
-from ImageUtil import drawMap
 from BWJRoomHelperV2 import roomHelper
 
 class AutoCleaningQueue(queue.Queue):
@@ -24,9 +23,22 @@ if __name__ == '__main__':
     yolo = YOLOv5(os.path.join(current_dir,"./utils/dnfm.onnx"),image_queue,infer_queue,show_queue)
     control = GameControl(client,os.path.join(current_dir,"./skill.json"))
     action = GameAction(control,infer_queue)
+    quitFlag = False
     while True:
+        if quitFlag:
+            cv2.destroyAllWindows()
+            yolo.stop()
+            client.stop()
+            action.stop()
+            break
+        def checkQuit():
+            key = cv2.waitKey(1)
+            if key == ord('q'):
+                global quitFlag
+                quitFlag = True
         if show_queue.empty():
             time.sleep(0.001)
+            checkQuit()
             continue
         image,result = show_queue.get()
         for boxs in result:
@@ -47,7 +59,7 @@ if __name__ == '__main__':
         button_height = 50
         button_gap = 10
         button_color = (0, 255, 0)  # 绿色按钮
-        buttons = ["run", "stop", "reset"]  # 按钮标签
+        buttons = ["run", "stop", "reset","quit"]  # 按钮标签
         # 在按钮区域绘制按钮
         def draw_buttons(panel):
             for i, label in enumerate(buttons):
@@ -74,6 +86,9 @@ if __name__ == '__main__':
                 action.stop_event = True
             elif button_index == 2:
                 action.reset()
+            elif button_index == 3:
+                global quitFlag
+                quitFlag = True
         # 合并图片和按钮面板
         def update_display():
             combined = np.hstack((image, button_panel))  # 水平拼接
@@ -82,5 +97,4 @@ if __name__ == '__main__':
         cv2.namedWindow("Image")
         cv2.setMouseCallback("Image", on_mouse)
         update_display()  # 更新显示
-        cv2.waitKey(1)
-        
+        checkQuit()

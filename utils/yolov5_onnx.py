@@ -307,6 +307,7 @@ class YOLOv5:
         self.image_queue = image_queue
         self.infer_queue = infer_queue
         self.show_queue = show_queue
+        self.stopFlag = False
         self.thread = threading.Thread(target=self.thread)  # 创建线程，并指定目标函数
         self.thread.daemon = True  # 设置为守护线程（可选）
         self.thread.start()
@@ -339,6 +340,10 @@ class YOLOv5:
             output[:,3] = (output[:,3] - top_pad)/(640-top_pad*2)
             self.infer_queue.put([img,output])
             self.show_queue.put([img,output])
+            if self.stopFlag:
+                break
+    def stop(self):
+        self.stopFlag = True
     def from_numpy(self,x):
         """Converts a NumPy array to a torch tensor, maintaining device compatibility."""
         return torch.from_numpy(x) if isinstance(x, np.ndarray) else x

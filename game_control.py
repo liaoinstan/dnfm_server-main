@@ -72,7 +72,6 @@ class GameControl:
             self.attack_touch == "none"
         x, y = (int(self.config[name][0]), int(self.config[name][1]))
         x, y = self._ramdon_xy(x, y)
-        # print("xxxx1",x,y)
         self.adb.touch_down(x, y,3)
         time.sleep(t)
         self.adb.touch_up(x, y,3)
