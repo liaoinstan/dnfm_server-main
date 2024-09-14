@@ -1,6 +1,6 @@
 import math
 from enum import Enum
-from config import CENTER_POINT,OFFSET_ROOM,OFFSET_ARROW,RATE
+from config import CENTER_POINT, OFFSET_ROOM, OFFSET_ARROW
 
 ########################################################
 #   只能在布万加副本内使用，目前只支持走布万加下路
@@ -35,9 +35,9 @@ class Direction(Enum):
 
 class BWJRoomHelper(object):
     def __init__(self):
-        self.center = (convet(CENTER_POINT[0]), convet(CENTER_POINT[1]))
-        self.offsetRoom = convet(OFFSET_ROOM)
-        self.offsetArrow = convet(OFFSET_ARROW)
+        self.center: tuple
+        self.offsetRoom: int
+        self.offsetArrow: int
         self.img = None
         # 已走过的道路的颜色，用于区分小地图的房间是否已经清理
         self.wayColor = (211, 183, 128)
@@ -51,6 +51,15 @@ class BWJRoomHelper(object):
         self.searchCache = {}
         # 是否开启区域查找（不开启只会查找指定的点，开启会查找以该点为中心11*11像素内的区域）
         self.searchByArea = True
+
+    # 使用前先初始化
+    # rate：画布宽/屏幕宽，没设置画布默认1
+    def init(self, rate=1):
+        def convet(x):
+            return int(x*rate)
+        self.center = (convet(CENTER_POINT[0]), convet(CENTER_POINT[1]))
+        self.offsetRoom = convet(OFFSET_ROOM)
+        self.offsetArrow = convet(OFFSET_ARROW)
 
     # 计算两个RGB颜色之间的欧氏距离，距离代表相似度，越小越相似
     def __euclideanColorDistance(self, color1, color2):
@@ -70,13 +79,16 @@ class BWJRoomHelper(object):
             # 先尝试从缓存中找是否先前已经查找过该点的颜色
             if (x, y) in self.searchCache:
                 if self.__areColorsSimilar(color, self.searchCache[(x, y)]):
+                    log("缓存中已找到:", color, x, y)
                     return True
                 else:
                     # 如果缓存中有记录，且不是当前要查找的颜色，也不用查询了，返回False
+                    log("缓存中没有找到:", color, x, y)
                     return False
 
             # 缓存中没有，则开始查找
             findColor = self.__findColorFormArea(color, x, y)
+            log("区域查找已找到:", findColor, x, y)
 
             # 如果查找到指定颜色，将坐标和颜色值写入缓存
             if findColor:
@@ -126,7 +138,7 @@ class BWJRoomHelper(object):
     def __hasBuff(self, d: Direction):
         x, y = self.__getPositionByDirection(d, self.offsetRoom)
         return self.__hasColor(self.buffColor, x, y)
-    
+
     # 某个方向是否有精英怪
     def __hasMoster(self, d: Direction):
         x, y = self.__getPositionByDirection(d, self.offsetRoom)
@@ -148,8 +160,8 @@ class BWJRoomHelper(object):
         self.searchCache.clear()
         self.img = img0
         # if not self.__hasGone(Direction.LEFT) and not self.__hasGone(Direction.LEFT_TOP) and not self.__hasGone(Direction.LEFT_BOTTOM) and self.__hasArrow(Direction.BOTTOM):
-            # 左边3个房间都没清理，且箭头朝下
-            # return 0
+        # 左边3个房间都没清理，且箭头朝下
+        # return 0
         if self.__hasArrow(Direction.BOTTOM) and (self.__hasGone(Direction.RIGHT) or self.__hasBuff(Direction.RIGHT) or self.__hasMoster(Direction.RIGHT)):
             # 箭头朝下，且右边房间已清理或有Buff或有精英怪
             return 0
@@ -175,6 +187,7 @@ class BWJRoomHelper(object):
             # 左边房间清理，左上左下没清理，且箭头朝右
             return 7
         elif (not self.__hasArrow(Direction.TOP) and not self.__hasArrow(Direction.RIGHT) and not self.__hasArrow(Direction.BOTTOM)) and (self.__hasGone(Direction.LEFT) or self.__hasBuff(Direction.LEFT)):
+            log("xxx 8 self.__hasArrow(Direction.RIGHT):", self.__hasArrow(Direction.RIGHT))
             # 上右下都没有箭头 && （左边房间清理 || 左边房间有Buff）
             return 8
         elif self.__hasGone(Direction.BOTTOM) and self.__hasArrow(Direction.RIGHT) and (self.__hasGone(Direction.RIGHT_BOTTOM) or self.__hasBuff(Direction.RIGHT_BOTTOM) or self.__hasMoster(Direction.RIGHT_BOTTOM)):
@@ -260,12 +273,14 @@ class BWJRoomHelper(object):
         ########################################################
 
 
-def convet(x):
-    return int(x*RATE)
-
 # 生成区间:左闭右闭
 def fromTo(i, j):
     return range(i, j+1)
+
+
+def log(*text):
+    if False:
+        print(*text)
 
 
 roomHelper = BWJRoomHelper()

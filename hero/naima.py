@@ -23,7 +23,7 @@ class Naima(Hero):
                 time.sleep(wait)
                 self.ctrl.move(295)
                 time.sleep(0.5)
-                self.skill("审判锤击")
+                self.skill("光明之杖")
                 time.sleep(1.5)
                 self.skill("胜利之矛")
                 time.sleep(0.5)
@@ -98,7 +98,7 @@ class Naima(Hero):
                 self.ctrl.move(330)
                 time.sleep(0.4)
                 self.ctrl.move(0)
-                self.skill("审判锤击")
+                self.skill("光明之杖")
                 time.sleep(2)
                 self.skill("勇气颂歌")
             elif MapNumber == 10:

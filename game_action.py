@@ -6,7 +6,6 @@ import numpy as np
 from collections import deque
 import threading
 from adbutils import adb
-from scrcpy_adb import convetPoint
 from BWJRoomHelperV2 import roomHelper
 import random
 
@@ -260,8 +259,10 @@ class GameAction:
                     time.sleep(0.5)
                 continue
             
-            hero = boxs[boxs[:,5]==6][:,:4]
+            hero = boxs[boxs[:,5]==6][:,:5]
             if self.room_num != room_num :
+                if (self.room_num>=0):
+                    print("纠正当前房间号")
                 self.room_num = room_num
                 if len(hero) > 0:
                     self.pre_state = False
@@ -368,16 +369,29 @@ class GameAction:
                 print("\r", end='')
                 print(f"\r当前进度:{outprint},角度{int(angle):04d}，位置{hero_track[0]}，行动时间:{waitStr} ", end="")
     def calculate_hero_pos(self,hero_track,boxs):
+        # print("hero_track",hero_track)
+        # print("boxs",boxs)
         if len(boxs)==0:
             None
         elif len(boxs)==1:
             hero_track.appendleft(calculate_center(boxs[0]))
         elif len(boxs)>1:
+            # 以前的逻辑是使用距离上一次位置<10%的英雄
+            # for box in boxs:
+            #     if calculate_distance(box,hero_track[0])<0.1:
+            #         hero_track.appendleft(box)
+            #         return
+            #     hero_track.appendleft(hero_track[0])
+            # 页面检查到多个英雄时，使用置信度最高的英雄
+            maxThink = 0
+            maxBox = None
             for box in boxs:
-                if calculate_distance(box,hero_track[0])<0.1:
-                    hero_track.appendleft(box)
-                    return
-                hero_track.appendleft(hero_track[0])
+                if box[4] > maxThink:
+                    maxThink = box[4]
+                    maxBox = box
+            hero_track.appendleft(calculate_center(maxBox))
+                
+                
     def directionOfDoorNum(self, doorNum):
         if doorNum == 8:
             return "向下"
