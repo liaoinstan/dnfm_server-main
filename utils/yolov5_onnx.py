@@ -301,9 +301,10 @@ def non_max_suppression(
     return output
 
 class YOLOv5:
-    def __init__(self, model_path,image_queue,infer_queue,show_queue):
-        self.label = ['Monster', 'Monster_ds', 'Monster_szt', 'card', 'equipment', 'go', 'hero', 'map', 'opendoor_d', 'opendoor_l', 'opendoor_r', 'opendoor_u', 'pet', 'Diamond']
+    label = ['Monster', 'Monster_ds', 'Monster_szt', 'card', 'equipment', 'go', 'hero', 'map', 'opendoor_d', 'opendoor_l', 'opendoor_r', 'opendoor_u', 'pet', 'Diamond']
+    def __init__(self, model_path,image_queue,infer_queue,show_queue,onFrame):
         self.path = model_path
+        self.onFrame = onFrame
         self.image_queue = image_queue
         self.infer_queue = infer_queue
         self.show_queue = show_queue
@@ -340,7 +341,8 @@ class YOLOv5:
             output[:,2] = output[:,2]/640
             output[:,3] = (output[:,3] - top_pad)/(640-top_pad*2)
             self.infer_queue.put([img,output])
-            self.show_queue.put([img,output])
+            # self.show_queue.put([img,output])
+            self.onFrame(img, output)
             if self.stopFlag:
                 break
     def stop(self):

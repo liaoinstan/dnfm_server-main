@@ -61,8 +61,8 @@ class Naima(Hero):
                 self.skill("胜利之矛")
             elif MapNumber == 5:
                 time.sleep(wait)
-                self.ctrl.move(-95)
-                time.sleep(0.3)
+                self.ctrl.move(-120)
+                time.sleep(0.32)
                 self.skill("觉醒")
                 time.sleep(0.4)
                 self.skill("觉醒")

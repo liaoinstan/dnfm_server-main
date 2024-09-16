@@ -382,6 +382,8 @@ class GameAction:
                 time.sleep(2)
                 # 获取连接的设备列表
                 adb.device().click(*AGAIN)
+                time.sleep(1)
+                adb.device().click(*AGAIN)
                 self.againTimeOut = time.time()
                 #这里的坐标换成自己的再次挑战所在的坐标就行
                 self.room_num = 0
@@ -394,6 +396,8 @@ class GameAction:
                 print("\n返回城镇")
                 self.ctrl.move(0)
                 self.againTimeOut = 0
+                time.sleep(1)
+                adb.device().click(*GOHOME)
                 time.sleep(1)
                 adb.device().click(*GOHOME)
                 self.actionStatus = ActionStatus.NONE
