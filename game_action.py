@@ -7,7 +7,7 @@ from enum import Enum
 from collections import deque
 import threading
 from adbutils import adb
-from BWJRoomHelperV2 import Direction, roomHelper
+from utils.BWJRoomHelperV2 import Direction, roomHelper
 import random
 from config import AGAIN,GOHOME
 
@@ -182,6 +182,7 @@ class GameAction:
         self.room_num = -1
         self.hasKillSZT = False
         self.timeOut = 0
+        self.againTimeOut = 0
         self.stopFlag = False
         self.buwanjia = [8,10,10,11,9,10,10,10,10,10,8,8]
         self.thread_run = True
@@ -196,7 +197,6 @@ class GameAction:
         time.sleep(0.1)
         self.hasKillSZT = False
         self.room_num = -1
-        self.againRetryCount = 0
         self.actionStatus = ActionStatus.NONE
         self.pre_state = True
         self.thread_run = True
@@ -265,9 +265,6 @@ class GameAction:
                     room_num = 10
                 elif room_num == 10:
                     room_num = 11
-            # if self.detect_retry:
-            if room_num == -1:
-                    self.actionStatus = ActionStatus.NONE
             if self.actionStatus != ActionStatus.NONE:
                 # 已通关，不再检测房间
                 room_num = 9
@@ -302,6 +299,7 @@ class GameAction:
                     self.pre_state = False
                     if room_num == 0 and len(roomHelper.cleanedRoom) == 1:
                         self.count += 1
+                        self.againTimeOut = 0
                         print(f"==================第{self.count}轮==================")
                     print("房间号：",self.room_num)
                     print("目标",self.directionOfDoorNum(direction))
@@ -322,8 +320,12 @@ class GameAction:
             angle = 0
             outprint = ''
             self.calculate_hero_pos(hero_track,hero)#计算英雄位置
-            # 计算操作是否超时
-            if self.timeOut == 0 or self.actionStatus != ActionStatus.NONE:
+            if self.againTimeOut != 0:
+                waitAgainTime = int((time.time() - self.againTimeOut) * 1000) 
+                if waitAgainTime > 7000:
+                    self.actionStatus = ActionStatus.GOHOME
+            # 计算操作是否超时(以结束关卡，或等待再次挑战期间不计时)
+            if self.timeOut == 0 or self.actionStatus != ActionStatus.NONE or self.againTimeOut != 0:
                 waitTime = 0
             else:
                 waitTime = int((time.time() - self.timeOut) * 1000) 
@@ -375,29 +377,23 @@ class GameAction:
                 if self.timeOut == 0:
                     self.timeOut = time.time()
             elif self.actionStatus == ActionStatus.AGAIN:
-                #重新挑战：自行发挥
-                print("\r检测再次挑战")
+                print("\n检测再次挑战")
                 self.ctrl.move(0)
                 time.sleep(2)
                 # 获取连接的设备列表
                 adb.device().click(*AGAIN)
-                time.sleep(1)
-                adb.device().click(*AGAIN)
+                self.againTimeOut = time.time()
                 #这里的坐标换成自己的再次挑战所在的坐标就行
                 self.room_num = 0
                 self.hasKillSZT = False
                 self.timeOut = 0
                 hero_track = deque()
                 hero_track.appendleft([0,0])
-                self.againRetryCount += 1
-                if self.againRetryCount > 3:
-                    self.actionStatus = ActionStatus.GOHOME
+                self.actionStatus = ActionStatus.NONE
             elif self.actionStatus == ActionStatus.GOHOME:
-                print("\r返回城镇")
+                print("\n返回城镇")
                 self.ctrl.move(0)
-                self.againRetryCount = 0
-                time.sleep(1)
-                adb.device().click(*GOHOME)
+                self.againTimeOut = 0
                 time.sleep(1)
                 adb.device().click(*GOHOME)
                 self.actionStatus = ActionStatus.NONE

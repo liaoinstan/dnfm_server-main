@@ -62,7 +62,7 @@ class Naima(Hero):
             elif MapNumber == 5:
                 time.sleep(wait)
                 self.ctrl.move(-95)
-                time.sleep(0.4)
+                time.sleep(0.3)
                 self.skill("觉醒")
                 time.sleep(0.4)
                 self.skill("觉醒")
@@ -115,7 +115,7 @@ class Naima(Hero):
     # 2024/9/15
     # 自动攻击执行逻辑
     # 给角色安排1-2个冷却低的小技能（最好是不在上面的预定施放列表中的）
-    # 自动攻击期间，每隔 5 秒，角色施放一次该技能，其余时间普攻
+    # 自动攻击期间，每隔2.5秒，尝试施放一次该技能，其余时间普攻
     # 
     #######################################################################
     def get_auto_skill(self): 

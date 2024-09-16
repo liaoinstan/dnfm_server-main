@@ -123,7 +123,7 @@ class Hero:
             self.ctrl.attack()
         elif abs(hero_pos[1]-close_monster_point[1]) < 0.1 and abs(hero_pos[0]-close_monster_point[0]) < 0.15:
             timeGap = int((time.time() - self.last_auto_skill_time) * 1000) 
-            if timeGap > 5000:
+            if timeGap > 2500:
                 skill_name = call_get_skill()[0]
                 self.skill(skill_name)
                 self.last_auto_skill_time = time.time()

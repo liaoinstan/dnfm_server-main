@@ -4,6 +4,7 @@ import json
 from scrcpy_adb import ScrcpyADB
 import math
 import random
+from config import JITTER
 class GameControl:
     def __init__(self, adb: ScrcpyADB,config):
         with open(config, 'r') as file:
@@ -127,7 +128,7 @@ class GameControl:
         self.move(0)
         self.attack(False)
     def _ramdon_xy(self, x, y):
-        x = x + random.randint(-5, 5)
-        y = y + random.randint(-5, 5)
+        x = x + random.randint(-JITTER, JITTER)
+        y = y + random.randint(-JITTER, JITTER)
         return x, y
 

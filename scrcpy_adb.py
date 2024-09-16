@@ -6,7 +6,8 @@ import scrcpy
 from config import WINDOW_WIDTH
 import subprocess
 import re
-from BWJRoomHelperV2 import roomHelper
+from utils.BWJRoomHelperV2 import roomHelper
+from utils.ButtonHelper import buttonHelper
 
 
 class ScrcpyADB:
@@ -35,6 +36,7 @@ class ScrcpyADB:
             else:
                 self.rate = WINDOW_WIDTH/int(result.group(1))
             roomHelper.init(self.rate)
+            buttonHelper.init(self.rate)
         if error:
             print("设备异常:", error.decode())
             return

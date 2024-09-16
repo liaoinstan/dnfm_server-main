@@ -7,7 +7,8 @@ from game_action import GameAction
 import queue
 import time
 import os 
-from BWJRoomHelperV2 import roomHelper,Direction
+from utils.BWJRoomHelperV2 import roomHelper,Direction
+from utils.ButtonHelper import buttonHelper
 
 class AutoCleaningQueue(queue.Queue):
     def put(self, item, block=True, timeout=None):
@@ -21,7 +22,7 @@ if __name__ == '__main__':
     current_dir = os.path.dirname(os.path.abspath(__file__))
     client = ScrcpyADB(image_queue,max_fps = 15)
     yolo = YOLOv5(os.path.join(current_dir,"./utils/dnfm.onnx"),image_queue,infer_queue,show_queue)
-    control = GameControl(client,os.path.join(current_dir,"./skill.json"))
+    control = GameControl(client,os.path.join(current_dir,"./buttons.json"))
     action = GameAction(control,infer_queue)
     quitFlag = False
     while True:
@@ -51,8 +52,8 @@ if __name__ == '__main__':
             cv2.putText(image, "{:.2f}".format(conf), (int(x1), int(y1-10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2)
             cv2.putText(image, yolo.label[int(label)], (int(x1), int(y1-30)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 2)
         roomHelper.drawMap(image)
-        direction = action.convertDirection(action.buwanjia[action.room_num]) if action.room_num>=0 else None
         roomHelper.drawMiniMap(image)
+        buttonHelper.drawButtons(image, control.config)
         # image = cv2.resize(image,(1800,int(image.shape[0]*1800/image.shape[1])))
         # 创建按钮区域
         button_panel_width = 100
