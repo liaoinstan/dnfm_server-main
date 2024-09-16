@@ -13,6 +13,9 @@ class ScrcpyADB:
     def __init__(self, image_queue, max_fps=15):
         # 获取adb设备列表
         devices = adb.device_list()
+        if len(devices) == 0:
+            print("未找到设备")
+            return
         # 取第一台为游戏设备
         if WINDOW_WIDTH == 0:
             client = scrcpy.Client(device=devices[0], max_fps=max_fps, block_frame=True)
@@ -24,7 +27,7 @@ class ScrcpyADB:
         output, error = process.communicate()
         if output:
             # 正则解析返回结果
-            print(output.decode())
+            print("手机分辨率",output.decode())
             result = re.search(r'\d{4}x(\d{4})', output.decode())
             # 初始化
             if WINDOW_WIDTH == 0:

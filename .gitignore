@@ -1,1 +1,6 @@
 __pycache__/
+.vscode
+.vscode/**
+.idea
+.idea/**
+.cpython-38.pyc

@@ -3,12 +3,13 @@ import time
 import cv2
 import math
 import numpy as np
+from enum import Enum
 from collections import deque
 import threading
 from adbutils import adb
-from BWJRoomHelperV2 import roomHelper
+from BWJRoomHelperV2 import Direction, roomHelper
 import random
-from config import AGAIN
+from config import AGAIN,GOHOME
 
 
 
@@ -163,12 +164,17 @@ names =['Monster', #0
         'opendoor_u', #11
         'pet',# 12
         'diamond']# 13
+class ActionStatus(Enum):
+    NONE = 0
+    AGAIN = 1
+    GOHOME = 2
 from hero.naima import Naima
 class GameAction:
     def __init__(self, ctrl: GameControl,queue):
         self.queue = queue
         self.ctrl = ctrl
-        self.detect_retry = False
+        self.againRetryCount = 0
+        self.actionStatus = ActionStatus.NONE
         self.pre_state = True #是否过图中
         self.stop_event = True
         self.reset_event = False
@@ -182,6 +188,7 @@ class GameAction:
         self.thread = threading.Thread(target=self.control)  # 创建线程，并指定目标函数
         self.thread.daemon = True  # 设置为守护线程（可选）
         self.thread.start()
+        self.count = 0
     def stop(self):
         self.stopFlag = True
     def reset(self):
@@ -189,13 +196,23 @@ class GameAction:
         time.sleep(0.1)
         self.hasKillSZT = False
         self.room_num = -1
-        self.detect_retry = False
+        self.againRetryCount = 0
+        self.actionStatus = ActionStatus.NONE
         self.pre_state = True
         self.thread_run = True
         self.thread = threading.Thread(target=self.control)  # 创建线程，并指定目标函数
         self.thread.daemon = True  # 设置为守护线程（可选）
         self.timeOut = 0
         self.thread.start()
+    def convertDirection(self, dNum:int):
+        if dNum == 8:
+            return Direction.BOTTOM
+        elif dNum == 9:
+            return Direction.LEFT
+        elif dNum == 10:
+            return Direction.RIGHT
+        elif dNum == 11:
+            return Direction.TOP
     def control(self):
         last_room_pos = []
         hero_track = deque()
@@ -206,6 +223,7 @@ class GameAction:
                 break
             if self.stop_event:
                 time.sleep(0.001)
+                self.count = 0
                 self.ctrl.reset()
                 continue
             if self.queue.empty():
@@ -223,8 +241,8 @@ class GameAction:
             if len(card)>=8:
                 time.sleep(1)
                 self.ctrl.click(0.25*image.shape[0],0.25*image.shape[1])
-                self.detect_retry = True
-                print("已检测到卡牌", self.detect_retry)
+                self.actionStatus = ActionStatus.AGAIN
+                print("已检测到卡牌")
                 time.sleep(3)
 
             room_num = roomHelper.parseRoomNum(image)
@@ -247,12 +265,18 @@ class GameAction:
                     room_num = 10
                 elif room_num == 10:
                     room_num = 11
-            if self.detect_retry:
+            # if self.detect_retry:
+            if room_num == -1:
+                    self.actionStatus = ActionStatus.NONE
+            if self.actionStatus != ActionStatus.NONE:
                 # 已通关，不再检测房间
                 room_num = 9
                 
-            direction = self.buwanjia[room_num]
-            if not self.hasKillSZT and room_num == 7:
+            if room_num>=0:
+                direction = self.buwanjia[room_num]
+                roomHelper.direction = self.convertDirection(direction)
+
+            if not self.hasKillSZT and (room_num == 7 or room_num == 8):
                 # 如果还没打狮子头就意外进了7号房，那么向左边走
                 direction = 9
             
@@ -276,6 +300,9 @@ class GameAction:
                 self.room_num = room_num
                 if len(hero) > 0:
                     self.pre_state = False
+                    if room_num == 0 and len(roomHelper.cleanedRoom) == 1:
+                        self.count += 1
+                        print(f"==================第{self.count}轮==================")
                     print("房间号：",self.room_num)
                     print("目标",self.directionOfDoorNum(direction))
                 else:
@@ -296,7 +323,7 @@ class GameAction:
             outprint = ''
             self.calculate_hero_pos(hero_track,hero)#计算英雄位置
             # 计算操作是否超时
-            if self.timeOut == 0 or self.detect_retry:
+            if self.timeOut == 0 or self.actionStatus != ActionStatus.NONE:
                 waitTime = 0
             else:
                 waitTime = int((time.time() - self.timeOut) * 1000) 
@@ -347,9 +374,9 @@ class GameAction:
                 self.ctrl.attack(False)
                 if self.timeOut == 0:
                     self.timeOut = time.time()
-            elif self.detect_retry == True:
+            elif self.actionStatus == ActionStatus.AGAIN:
                 #重新挑战：自行发挥
-                print("检测再次挑战")
+                print("\r检测再次挑战")
                 self.ctrl.move(0)
                 time.sleep(2)
                 # 获取连接的设备列表
@@ -357,12 +384,23 @@ class GameAction:
                 time.sleep(1)
                 adb.device().click(*AGAIN)
                 #这里的坐标换成自己的再次挑战所在的坐标就行
-                self.detect_retry =False
                 self.room_num = 0
                 self.hasKillSZT = False
                 self.timeOut = 0
                 hero_track = deque()
                 hero_track.appendleft([0,0])
+                self.againRetryCount += 1
+                if self.againRetryCount > 3:
+                    self.actionStatus = ActionStatus.GOHOME
+            elif self.actionStatus == ActionStatus.GOHOME:
+                print("\r返回城镇")
+                self.ctrl.move(0)
+                self.againRetryCount = 0
+                time.sleep(1)
+                adb.device().click(*GOHOME)
+                time.sleep(1)
+                adb.device().click(*GOHOME)
+                self.actionStatus = ActionStatus.NONE
             else :
                 outprint = "无目标"
                 if self.room_num == 4:
@@ -379,8 +417,6 @@ class GameAction:
                 print("\r", end='')
                 print(f"\r当前进度:{outprint},角度{int(angle):04d}，位置{hero_track[0]}，行动时间:{waitStr} ", end="")
     def calculate_hero_pos(self,hero_track,boxs):
-        # print("hero_track",hero_track)
-        # print("boxs",boxs)
         if len(boxs)==0:
             None
         elif len(boxs)==1:

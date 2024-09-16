@@ -2,12 +2,13 @@ import time
 import math
 from .hero import Hero
 
-#通用逻辑已迁移至父类Hero,其他英雄请继承Hero
+# 通用逻辑已迁移至父类Hero,其他英雄请继承Hero
+
+
 class Naima(Hero):
-    def __init__(self, ctrl):
-        super().__init__(ctrl)
 
     def control(self, hero_pos, image, boxs, MapNumber):
+        # 首次进入房间释放预定技能
         if self.pre_room_num != MapNumber:
             wait = 0.1
             if MapNumber == 0:
@@ -38,7 +39,6 @@ class Naima(Hero):
                 self.ctrl.move(360)
                 self.skill("惩戒加身")
                 time.sleep(1)
-
             elif MapNumber == 3:
                 time.sleep(wait)
                 self.ctrl.move(345)
@@ -61,6 +61,7 @@ class Naima(Hero):
                 self.skill("胜利之矛")
             elif MapNumber == 5:
                 time.sleep(wait)
+                self.ctrl.move(-95)
                 time.sleep(0.4)
                 self.skill("觉醒")
                 time.sleep(0.4)
@@ -105,18 +106,17 @@ class Naima(Hero):
                 MapNumber == 9
             self.pre_room_num = MapNumber
             return 0
-        self.pre_room_num = MapNumber
-        monster = boxs[boxs[:, 5] <= 2][:, :4]
-        close_monster, distance = self.find_close_point_to_box(monster, hero_pos)
-        close_monster_point = self.calculate_center(close_monster)
-        angle = self.calculate_point_to_box_angle(hero_pos, close_monster)
-        if not self.are_angles_on_same_side_of_y(self.last_angle, angle):
-            self.ctrl.move(angle)
-            self.ctrl.attack(False)
-        elif abs(hero_pos[1]-close_monster_point[1]) < 0.1 and abs(hero_pos[0]-close_monster_point[0]) < 0.15:
-            self.ctrl.attack()
         else:
-            self.ctrl.move(angle)
-            self.ctrl.attack(False)
-        self.last_angle = angle
-        return angle
+            self.pre_room_num = MapNumber
+        # 预订技能释放后还有怪物，进行自动攻击
+        return self.control_auto(hero_pos, boxs, self.get_auto_skill)
+
+    #######################################################################
+    # 2024/9/15
+    # 自动攻击执行逻辑
+    # 给角色安排1-2个冷却低的小技能（最好是不在上面的预定施放列表中的）
+    # 自动攻击期间，每隔 5 秒，角色施放一次该技能，其余时间普攻
+    # 
+    #######################################################################
+    def get_auto_skill(self): 
+        return ["唤雷符"]
