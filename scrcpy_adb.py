@@ -3,7 +3,7 @@ import cv2
 from adbutils import adb
 import time
 import scrcpy
-from config import WINDOW_WIDTH
+from config import FRAME_WIDTH
 import subprocess
 import re
 from utils.BWJRoomHelperV2 import roomHelper
@@ -18,10 +18,10 @@ class ScrcpyADB:
             print("未找到设备")
             return
         # 取第一台为游戏设备
-        if WINDOW_WIDTH == 0:
+        if FRAME_WIDTH == 0:
             client = scrcpy.Client(device=devices[0], max_fps=max_fps, block_frame=True)
         else:
-            client = scrcpy.Client(device=devices[0], max_width=WINDOW_WIDTH, max_fps=max_fps, block_frame=True)
+            client = scrcpy.Client(device=devices[0], max_width=FRAME_WIDTH, max_fps=max_fps, block_frame=True)
         print(devices, client)
         # 发送adb命令获取物理屏幕分辨率
         process = subprocess.Popen("adb shell wm size", shell=True, stdout=subprocess.PIPE)

@@ -1,4 +1,4 @@
-from config import WINDOW_WIDTH
+from config import FRAME_WIDTH
 
 DEVICE_WIDTH: int
 DEVICE_HEIGHT: int
@@ -11,8 +11,8 @@ def setDeviceResolution(width: int, height: int):
     DEVICE_WIDTH = width
     DEVICE_HEIGHT = height
     RATE = DEVICE_HEIGHT/DEVICE_WIDTH
-    if WINDOW_WIDTH != 0:
-        SCALE = WINDOW_WIDTH/DEVICE_WIDTH
+    if FRAME_WIDTH != 0:
+        SCALE = FRAME_WIDTH/DEVICE_WIDTH
     else:
         SCALE = 1
 

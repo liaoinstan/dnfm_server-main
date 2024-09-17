@@ -11,6 +11,7 @@ from utils.ButtonHelper import buttonHelper
 import utils.RuntimeData as R
 from config import SHOW_MAP_POINT, SHOW_BUTTON, ALPHA
 
+version = "1.1.0A"
 
 class MainWindow(QWidget):
 
@@ -27,7 +28,7 @@ class MainWindow(QWidget):
         self.initUI()
 
     def initUI(self):
-        self.setWindowTitle('Image Window')
+        self.setWindowTitle(f'DNFM v{version}')
         self.setGeometry(100, 100, 100, 100)
         self.setWindowOpacity(0.75)
         self.setMinimumSize(100, 100)
@@ -96,8 +97,8 @@ class MainWindow(QWidget):
         self.setLayout(hbox)
 
     def resizeToDefault(self):
-        self.setGeometry(100, 100, R.WINDOW_WIDTH+self.rightBarWidth+self.hSpace,
-                         int(R.WINDOW_WIDTH*R.RATE))
+        self.setGeometry(100, 100, R.FRAME_WIDTH+self.rightBarWidth+self.hSpace,
+                         int(R.FRAME_WIDTH*R.RATE))
 
     def onFrame(self, frame, output):
         if not self.isVisible():
