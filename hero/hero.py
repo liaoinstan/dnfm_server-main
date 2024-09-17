@@ -106,8 +106,6 @@ class Hero:
     #######################################################################
     # 2024/9/15
     # 自动攻击执行逻辑
-    # 给角色安排1-2个冷却低的小技能（最好是不在上面的预定施放列表中的）
-    # 自动攻击期间，每隔 5 秒，角色施放一次该技能，其余时间普攻
     # 
     #######################################################################
     def control_auto(self, hero_pos, boxs, call_get_skill):
@@ -124,10 +122,13 @@ class Hero:
         elif abs(hero_pos[1]-close_monster_point[1]) < 0.1 and abs(hero_pos[0]-close_monster_point[0]) < 0.15:
             timeGap = int((time.time() - self.last_auto_skill_time) * 1000) 
             if timeGap > 2500:
-                skill_name = call_get_skill()[0]
-                self.skill(skill_name)
-                self.last_auto_skill_time = time.time()
-                time.sleep(0.4)
+                skills = call_get_skill()
+                if skills is not None and len(skills) != 0:
+                    for skill_name in skills[0]:
+                        skill_name = skills[0]
+                        self.skill(skill_name)
+                        self.last_auto_skill_time = time.time()
+                        time.sleep(0.5)
             else:
                 self.ctrl.attack()
         else:

@@ -6,6 +6,7 @@ from collections import OrderedDict,deque
 from PIL import Image, ImageDraw
 from enum import Enum
 from config import CENTER_POINT, OFFSET_ROOM
+import utils.RuntimeData as R
 
 ########################################################
 #   只能在布万加副本内使用，目前只支持走布万加下路
@@ -56,21 +57,18 @@ class BWJRoomHelper(object):
         self.searchCache = {}
         # 是否开启区域查找（不开启只会查找指定的点，开启会查找以该点为中心11*11像素内的区域）
         self.searchByArea = True
-        self.rate = 1
         self.cleanedRoom = OrderedDict()
         self.direction:Direction = None
         self.currentRoom = -2
 
     # 设备物理坐标转画布坐标
     def convet(self, x):
-        return int(x*self.rate)
+        return int(x*R.SCALE)
 
     # 使用前先初始化
     # rate：画布宽/屏幕宽，没设置画布默认1
-    def init(self, rate=1):
-        self.rate = rate
-        self.center = (self.convet(
-            CENTER_POINT[0]), self.convet(CENTER_POINT[1]))
+    def init(self):
+        self.center = (self.convet(CENTER_POINT[0]), self.convet(CENTER_POINT[1]))
         self.offsetRoom = self.convet(OFFSET_ROOM)
         self.offsetArrow = int(self.offsetRoom * 0.64)
 
@@ -297,8 +295,8 @@ class BWJRoomHelper(object):
         # 结束遍历
         ########################################################
 
-    def drawMap(self, image):
-        r = int(self.rate * 5)
+    def drawMapPoint(self, image):
+        r = int(R.SCALE * 5)
         x, y = self.center
         off = self.offsetRoom
         cv2.circle(image, (x+off, y+off), r, (0, 0, 255), -1)

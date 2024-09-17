@@ -7,7 +7,7 @@ from config import WINDOW_WIDTH
 import subprocess
 import re
 from utils.BWJRoomHelperV2 import roomHelper
-from utils.ButtonHelper import buttonHelper
+import utils.RuntimeData as R
 
 
 class ScrcpyADB:
@@ -29,14 +29,11 @@ class ScrcpyADB:
         if output:
             # 正则解析返回结果
             print("手机分辨率",output.decode())
-            result = re.search(r'\d{4}x(\d{4})', output.decode())
+            result = re.search(r'(\d+)x(\d+)', output.decode())
             # 初始化
-            if WINDOW_WIDTH == 0:
-                self.rate = 1
-            else:
-                self.rate = WINDOW_WIDTH/int(result.group(1))
-            roomHelper.init(self.rate)
-            buttonHelper.init(self.rate)
+            R.setDeviceResolution(int(result.group(2)), int(result.group(1)))
+            R.log()
+            roomHelper.init()
         if error:
             print("设备异常:", error.decode())
             return
@@ -54,7 +51,7 @@ class ScrcpyADB:
 
 
     def convetPoint(self, x, y):
-        return x*self.rate, y*self.rate
+        return x*R.SCALE, y*R.SCALE
 
     def touch_down(self, x: int or float, y: int or float, id: int = -1):
         x, y = self.convetPoint(x, y)

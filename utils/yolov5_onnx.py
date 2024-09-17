@@ -302,12 +302,11 @@ def non_max_suppression(
 
 class YOLOv5:
     label = ['Monster', 'Monster_ds', 'Monster_szt', 'card', 'equipment', 'go', 'hero', 'map', 'opendoor_d', 'opendoor_l', 'opendoor_r', 'opendoor_u', 'pet', 'Diamond']
-    def __init__(self, model_path,image_queue,infer_queue,show_queue,onFrame):
+    def __init__(self, model_path,image_queue,infer_queue,onFrame):
         self.path = model_path
         self.onFrame = onFrame
         self.image_queue = image_queue
         self.infer_queue = infer_queue
-        self.show_queue = show_queue
         self.stopFlag = False
         self.thread = threading.Thread(target=self.thread)  # 创建线程，并指定目标函数
         self.thread.daemon = True  # 设置为守护线程（可选）
@@ -322,7 +321,6 @@ class YOLOv5:
             if self.image_queue.empty():
                 time.sleep(0.005)
                 continue
-            sall = time.time()
             img = self.image_queue.get()
             image = Image.fromarray(cv2.cvtColor(img,cv2.COLOR_BGR2RGB))
             image,top_pad = resize_img(image)
@@ -340,11 +338,10 @@ class YOLOv5:
             output[:,1] = (output[:,1] - top_pad)/(640-top_pad*2)
             output[:,2] = output[:,2]/640
             output[:,3] = (output[:,3] - top_pad)/(640-top_pad*2)
-            self.infer_queue.put([img,output])
-            # self.show_queue.put([img,output])
-            self.onFrame(img, output)
             if self.stopFlag:
                 break
+            self.infer_queue.put([img,output])
+            self.onFrame(img, output)
     def stop(self):
         self.stopFlag = True
     def from_numpy(self,x):
