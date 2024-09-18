@@ -169,6 +169,8 @@ class ActionStatus(Enum):
     AGAIN = 1
     GOHOME = 2
 from hero.naima import Naima
+from hero.guiqi import Guiqi
+from hero.jianhun import Jianhun
 class GameAction:
     def __init__(self, ctrl: GameControl,queue):
         self.queue = queue

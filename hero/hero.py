@@ -1,5 +1,6 @@
 import time
 import math
+from abc import abstractmethod
 
 
 class Hero:
@@ -11,9 +12,17 @@ class Hero:
         import os
         import json
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        file_path = os.path.join(current_dir, "naima.json")
+        file_path = os.path.join(current_dir, self.get_config_file())
         with open(file_path, 'r', encoding='utf-8') as file:
             self.dict = json.load(file)  # 解析 JSON 文件
+
+    @abstractmethod
+    def get_config_file(self):
+        pass
+    
+    @abstractmethod
+    def get_auto_skill(self):
+        pass
 
     def skill(self, name, t=0):
         self.ctrl.skill(self.dict[name], t)
@@ -108,7 +117,7 @@ class Hero:
     # 自动攻击执行逻辑
     # 
     #######################################################################
-    def control_auto(self, hero_pos, boxs, call_get_skill):
+    def control_auto(self, hero_pos, boxs):
         monster = boxs[boxs[:, 5] <= 2][:, :4]
         close_monster, distance = self.find_close_point_to_box(
             monster, hero_pos)
@@ -122,10 +131,9 @@ class Hero:
         elif abs(hero_pos[1]-close_monster_point[1]) < 0.1 and abs(hero_pos[0]-close_monster_point[0]) < 0.15:
             timeGap = int((time.time() - self.last_auto_skill_time) * 1000) 
             if timeGap > 2500:
-                skills = call_get_skill()
+                skills = self.get_auto_skill()
                 if skills is not None and len(skills) != 0:
-                    for skill_name in skills[0]:
-                        skill_name = skills[0]
+                    for skill_name in skills:
                         self.skill(skill_name)
                         self.last_auto_skill_time = time.time()
                         time.sleep(0.5)

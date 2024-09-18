@@ -8,20 +8,45 @@ import subprocess
 import re
 from utils.BWJRoomHelperV2 import roomHelper
 import utils.RuntimeData as R
+import sys
+import threading
+
+def globalExceptionHandler(exctype, value, traceback):
+    # 处理未被捕获的异常
+    print("An unhandled exception occurred:")
+    print(f"Exception type: {exctype}")
+    print(f"Exception value: {value}")
+    print(f"Traceback: {traceback}")
+    
+sys.excepthook = globalExceptionHandler
 
 
 class ScrcpyADB:
-    def __init__(self, image_queue, max_fps=15):
+    def __init__(self, image_queue, onConnect, onDisconnect, max_fps=15):
+        self.queue = image_queue
+        self.max_fps = max_fps
+        self.onConnect = onConnect
+        self.onDisconnect = onDisconnect
+        self.connectThread:ConnectThread = None
+        self.init()
+        
+    def init(self):
         # 获取adb设备列表
         devices = adb.device_list()
         if len(devices) == 0:
             print("未找到设备")
+            if self.connectThread is None or self.connectThread.running == False:
+                self.connectThread = ConnectThread(self.init)
+                self.connectThread.start()
             return
+        if self.connectThread:
+            self.connectThread.stop()
         # 取第一台为游戏设备
         if FRAME_WIDTH == 0:
-            client = scrcpy.Client(device=devices[0], max_fps=max_fps, block_frame=True)
+            client = scrcpy.Client(device=devices[0], max_fps=self.max_fps, block_frame=True)
         else:
-            client = scrcpy.Client(device=devices[0], max_width=FRAME_WIDTH, max_fps=max_fps, block_frame=True)
+            client = scrcpy.Client(device=devices[0], max_width=FRAME_WIDTH, max_fps=self.max_fps, block_frame=True)
+        self.onConnect()
         print(devices, client)
         # 发送adb命令获取物理屏幕分辨率
         process = subprocess.Popen("adb shell wm size", shell=True, stdout=subprocess.PIPE)
@@ -39,16 +64,15 @@ class ScrcpyADB:
             return
         # 添加数据流回调
         client.add_listener(scrcpy.EVENT_FRAME, self.on_frame)
+        client.add_listener(scrcpy.EVENT_DISCONNECT, self.on_disconnect)
         # 启动scrcpy
         client.start(threaded=True)
         self.client = client
         self.last_screen = None
         self.frame_idx = -1
-        self.queue = image_queue
         
     def stop(self):
         self.client.stop()        
-
 
     def convetPoint(self, x, y):
         return x*R.SCALE, y*R.SCALE
@@ -86,7 +110,33 @@ class ScrcpyADB:
     def on_frame(self, frame: cv2.Mat):
         if frame is not None:
             self.queue.put(frame)
+            
+    def on_disconnect(self):
+        print("设备已断连")
+        self.onDisconnect()
+        self.connectThread = ConnectThread(self.init)
+        self.connectThread.start()
 
+
+class ConnectThread(threading.Thread):
+    def __init__(self, callback):
+        super().__init__(name="ConnectThread")
+        self.callback = callback
+        self.running = False
+
+    def run(self):
+        print(f"Thread {self.name} started")
+        while self.running:
+            self.callback()
+            time.sleep(1)
+        print(f"Thread {self.name} finished")
+    
+    def stop(self):
+        self.running = False
+        
+    def start(self):
+        self.running = True
+        super().start()
 
 if __name__ == '__main__':
     client = ScrcpyADB(None, max_fps=15)

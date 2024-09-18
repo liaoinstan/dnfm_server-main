@@ -2,7 +2,7 @@ import sys
 
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QHBoxLayout, QPushButton, QVBoxLayout, QSizePolicy, QCheckBox, QSlider,QFrame
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QHBoxLayout, QPushButton, QVBoxLayout,QStackedLayout, QSizePolicy, QCheckBox, QSlider,QFrame,QDesktopWidget
 from ui.SizeHelper import toDp
 import cv2
 from utils.yolov5_onnx import YOLOv5
@@ -42,8 +42,8 @@ class MainWindow(QWidget):
         vline.setFrameShadow(QFrame.Sunken)
         spacer = QWidget()
         spacer.setFixedSize(3, 3)
-        self.label = QLabel(self)
-        self.label.setAlignment(Qt.AlignCenter)
+        self.labelFrame = QLabel(self)
+        self.labelFrame.setAlignment(Qt.AlignCenter)
         self.startBtn = QPushButton("start")
         self.startBtn.clicked.connect(self.onclick)
         self.resetBtn = QPushButton("reset")
@@ -55,7 +55,14 @@ class MainWindow(QWidget):
         self.slider = QSlider()
         self.slider.valueChanged.connect(self.onSliderChanged)
         self.labelAlpha = QLabel('')
+        labelLoading = QLabel('正在查找设备，等待连接')
+        labelLoading.setAlignment(Qt.AlignCenter)
 
+        self.sbox = QStackedLayout()
+        self.sbox.setAlignment(Qt.AlignCenter)
+        self.sbox.addWidget(self.labelFrame)
+        self.sbox.addWidget(labelLoading)
+        self.sbox.setCurrentIndex(1)
 
         vbox = QVBoxLayout()
         vbox.addWidget(self.startBtn)
@@ -67,7 +74,7 @@ class MainWindow(QWidget):
         vbox.addStretch(1)
 
         hbox = QHBoxLayout()
-        hbox.addWidget(self.label)
+        hbox.addLayout(self.sbox)
         hbox.addWidget(vline)
         hbox.addWidget(spacer)
         hbox.addLayout(vbox)
@@ -75,8 +82,9 @@ class MainWindow(QWidget):
         hbox.setContentsMargins(0, 0, 0, 0)
         vbox.setContentsMargins(0, 0, 0, 0)
         # self.label.setScaledContents(True)
-        self.label.resize(1000, 450)
-        self.label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.labelFrame.resize(1000, 450)
+        self.labelFrame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        labelLoading.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.checkBoxPoint.setChecked(self.drawMapPoint)
         self.checkBoxButtons.setChecked(self.drawButton)
         self.slider.setOrientation(1)  # 设置为垂直方向
@@ -97,8 +105,13 @@ class MainWindow(QWidget):
         self.setLayout(hbox)
 
     def resizeToDefault(self):
-        self.setGeometry(100, 100, R.FRAME_WIDTH+self.rightBarWidth+self.hSpace,
-                         int(R.FRAME_WIDTH*R.RATE))
+        screen = QDesktopWidget().screenGeometry()
+        window = self.geometry()
+        w = R.FRAME_WIDTH+self.rightBarWidth+self.hSpace
+        h = int(R.FRAME_WIDTH*R.RATE)
+        x = screen.width() - w
+        y = screen.height() - h
+        self.setGeometry(x - 100, y - 150, w, h)
 
     def onFrame(self, frame, output):
         if not self.isVisible():
@@ -133,17 +146,17 @@ class MainWindow(QWidget):
             )
             pix = QPixmap(image)
             pix = self.__resizePixmap(pix)
-            self.label.setPixmap(pix)
+            self.labelFrame.setPixmap(pix)
             self.lastPixmap = pix
 
     def __resizePixmap(self, pix: QPixmap):
         rate = R.RATE
-        labelRate = self.label.size().height()/self.label.size().width()
+        labelRate = self.labelFrame.size().height()/self.labelFrame.size().width()
         if labelRate < rate:
-            height = self.label.size().height()
+            height = self.labelFrame.size().height()
             width = int(height / rate)
         else:
-            width = self.label.size().width()
+            width = self.labelFrame.size().width()
             height = int(width * rate)
         return pix.scaled(width, height, Qt.KeepAspectRatio)
 
@@ -184,7 +197,7 @@ class MainWindow(QWidget):
         pix = self.lastPixmap
         if pix is not None:
             pix = self.__resizePixmap(pix)
-            self.label.setPixmap(pix)
+            self.labelFrame.setPixmap(pix)
 
     def onSizeChanged(self):
         self.timer.stop()
@@ -193,6 +206,12 @@ class MainWindow(QWidget):
         self.yolo.stop()
         self.client.stop()
         self.action.quit()
+        
+    def onConnect(self):
+        self.sbox.setCurrentIndex(0)
+    
+    def onDisConnect(self):
+        self.sbox.setCurrentIndex(1)
 
 
 if __name__ == '__main__':

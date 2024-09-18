@@ -5,6 +5,9 @@ from .hero import Hero
 
 
 class Naima(Hero):
+    
+    def get_config_file(self):
+        return "naima.json"
 
     def control(self, hero_pos, image, boxs, MapNumber):
         # 首次进入房间释放预定技能
@@ -108,7 +111,7 @@ class Naima(Hero):
         else:
             self.pre_room_num = MapNumber
         # 预订技能释放后还有怪物，进行自动攻击
-        return self.control_auto(hero_pos, boxs, self.get_auto_skill)
+        return self.control_auto(hero_pos, boxs)
 
     #################################################################################
     # 2024/9/15

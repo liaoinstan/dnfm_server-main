@@ -2,7 +2,7 @@ from config import FRAME_WIDTH
 
 DEVICE_WIDTH: int
 DEVICE_HEIGHT: int
-RATE: float
+RATE: float = 0.45
 SCALE: float = 0
 
 
