@@ -312,7 +312,7 @@ class YOLOv5:
         self.thread.daemon = True  # 设置为守护线程（可选）
         self.thread.start()
     def thread(self):
-        session = ort.InferenceSession(self.path,providers=['CUDAExecutionProvider','CPUExecutionProvider'])
+        session = ort.InferenceSession(self.path,providers=['CPUExecutionProvider'])#'CUDAExecutionProvider',
         # 获取模型输入输出信息
         input_name = session.get_inputs()[0].name
         output_names = [output.name for output in session.get_outputs()]
