@@ -11,14 +11,14 @@ import utils.RuntimeData as R
 import sys
 import threading
 
-def globalExceptionHandler(exctype, value, traceback):
-    # 处理未被捕获的异常
-    print("An unhandled exception occurred:")
-    print(f"Exception type: {exctype}")
-    print(f"Exception value: {value}")
-    print(f"Traceback: {traceback}")
+# def globalExceptionHandler(exctype, value, traceback):
+#     # 处理未被捕获的异常
+#     print("An unhandled exception occurred:")
+#     print(f"Exception type: {exctype}")
+#     print(f"Exception value: {value}")
+#     print(f"Traceback: {traceback}")
     
-sys.excepthook = globalExceptionHandler
+# sys.excepthook = globalExceptionHandler
 
 
 class ScrcpyADB:
@@ -77,16 +77,19 @@ class ScrcpyADB:
     def convetPoint(self, x, y):
         return x*R.SCALE, y*R.SCALE
 
-    def touch_down(self, x: int or float, y: int or float, id: int = -1):
-        x, y = self.convetPoint(x, y)
+    def touch_down(self, x: int or float, y: int or float, id: int = -1, convert = True):
+        if convert:
+            x, y = self.convetPoint(x, y)
         self.client.control.touch(int(x), int(y), scrcpy.ACTION_DOWN, id)
 
-    def touch_move(self, x: int or float, y: int or float, id: int = -1):
-        x, y = self.convetPoint(x, y)
+    def touch_move(self, x: int or float, y: int or float, id: int = -1, convert = True):
+        if convert:
+            x, y = self.convetPoint(x, y)
         self.client.control.touch(int(x), int(y), scrcpy.ACTION_MOVE, id)
 
-    def touch_up(self, x: int or float, y: int or float, id: int = -1):
-        x, y = self.convetPoint(x, y)
+    def touch_up(self, x: int or float, y: int or float, id: int = -1, convert = True):
+        if convert:
+            x, y = self.convetPoint(x, y)
         self.client.control.touch(int(x), int(y), scrcpy.ACTION_UP, id)
 
     def touch_swipe(
@@ -97,12 +100,16 @@ class ScrcpyADB:
         end_y: int,
         move_step_length: int = 5,
         move_steps_delay: float = 0.005,
+        convert = True
     ):
-        start_x, start_y = self.convetPoint(start_x, start_y)
-        end_x, end_y = self.convetPoint(end_x, end_y)
+        if convert:
+            start_x, start_y = self.convetPoint(start_x, start_y)
+            end_x, end_y = self.convetPoint(end_x, end_y)
         self.client.control.swipe(start_x, start_y, end_x, end_y, move_step_length, move_steps_delay)
 
-    def tap(self, x: int or float, y: int or float):
+    def tap(self, x: int or float, y: int or float, convert = True):
+        if convert:
+            x, y = self.convetPoint(x, y)
         self.touch_start(x, y)
         time.sleep(0.01)
         self.touch_end(x, y)

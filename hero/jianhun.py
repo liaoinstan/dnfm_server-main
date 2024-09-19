@@ -4,9 +4,11 @@ from .hero import Hero
 
 class Jianhun(Hero):
 
+    # 配置每个英雄的键位映射表
     def get_config_file(self):
         return "jianhun.json"
 
+    # 每个房间的预订技能，只会在房间有怪的时候执行
     def control(self, hero_pos, image, boxs, MapNumber):
         if self.pre_room_num != MapNumber:
             wait = 0.1
@@ -119,3 +121,33 @@ class Jianhun(Hero):
     #################################################################################
     def get_auto_skill(self):
         return ["小小乱舞"]
+    
+    #################################################################################
+    # 特殊动作
+    # 
+    # 某些情况下希望人物做出一些特殊动作而设计
+    # 比如说剑魂打完狮子头回到6号房时，用五段斩跑图直接进入7号房
+    # 没有特殊动作的英雄，可以不写这个方法
+    #################################################################################
+    def special_action(self, last_room_num, room_num):
+        if self.pre_room_num == room_num:
+            return False
+        if last_room_num == 5 and room_num == 6:
+            self.skill("三段斩", prefix="特殊动作")
+            time.sleep(0.2)
+            self.skill("三段斩", prefix="特殊动作")
+            time.sleep(0.2)
+            self.skill("三段斩", prefix="特殊动作")
+            time.sleep(0.2)
+            self.skill("三段斩", prefix="特殊动作")
+            time.sleep(0.2)
+            self.skill("三段斩", prefix="特殊动作")
+            time.sleep(0.2)
+            self.skill("三段斩", prefix="特殊动作")
+            time.sleep(0.2)
+            self.skill("三段斩", prefix="特殊动作")
+            time.sleep(0.2)
+            self.pre_room_num = room_num
+            return True
+        else:
+            return False

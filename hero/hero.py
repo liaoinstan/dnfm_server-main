@@ -1,6 +1,7 @@
 import time
 import math
 from abc import abstractmethod
+from typing import List
 
 
 class Hero:
@@ -17,16 +18,20 @@ class Hero:
             self.dict = json.load(file)  # 解析 JSON 文件
 
     @abstractmethod
-    def get_config_file(self):
-        pass
-    
-    @abstractmethod
-    def get_auto_skill(self):
+    def get_config_file(self) -> List[str]:
         pass
 
-    def skill(self, name, t=0):
+    @abstractmethod
+    def get_auto_skill(self) -> List[str]:
+        pass
+
+    def special_action(self):
+        pass
+
+    def skill(self, name, t=0, need_print=True, prefix="释放预定技能"):
         self.ctrl.skill(self.dict[name], t)
-        print("释放预定技能:" + name)
+        if need_print:
+            print(f"{prefix}:" + name)
 
     def calculate_center(self, box):  # 计算矩形框的底边中心点坐标
         return ((box[0] + box[2]) / 2, box[3])
@@ -115,7 +120,7 @@ class Hero:
     #######################################################################
     # 2024/9/15
     # 自动攻击执行逻辑
-    # 
+    #
     #######################################################################
     def control_auto(self, hero_pos, boxs):
         monster = boxs[boxs[:, 5] <= 2][:, :4]
@@ -129,12 +134,12 @@ class Hero:
             time.sleep(0.1)
             self.ctrl.attack()
         elif abs(hero_pos[1]-close_monster_point[1]) < 0.1 and abs(hero_pos[0]-close_monster_point[0]) < 0.15:
-            timeGap = int((time.time() - self.last_auto_skill_time) * 1000) 
+            timeGap = int((time.time() - self.last_auto_skill_time) * 1000)
             if timeGap > 2500:
                 skills = self.get_auto_skill()
                 if skills is not None and len(skills) != 0:
                     for skill_name in skills:
-                        self.skill(skill_name)
+                        self.skill(skill_name, need_print=False)
                         self.last_auto_skill_time = time.time()
                         time.sleep(0.5)
             else:

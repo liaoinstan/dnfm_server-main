@@ -173,6 +173,14 @@ from hero.guiqi import Guiqi
 from hero.jianhun import Jianhun
 class GameAction:
     def __init__(self, ctrl: GameControl,queue):
+        self.checkHero = "剑魂"
+        # ---------- 英雄配置：
+        if self.checkHero == "奶妈":
+            self.control_attack = Naima(ctrl)
+        if self.checkHero == "鬼泣":
+            self.control_attack = Guiqi(ctrl)
+        if self.checkHero == "剑魂":
+            self.control_attack = Jianhun(ctrl)
         self.queue = queue
         self.ctrl = ctrl
         self.againRetryCount = 0
@@ -180,8 +188,8 @@ class GameAction:
         self.pre_state = True #是否过图中
         self.stop_event = True
         self.reset_event = False
-        self.control_attack = Naima(ctrl)
         self.room_num = -1
+        self.last_room_num = -1
         self.hasKillSZT = False
         self.timeOut = 0
         self.againTimeOut = 0
@@ -198,6 +206,7 @@ class GameAction:
         time.sleep(0.1)
         self.hasKillSZT = False
         self.room_num = -1
+        self.last_room_num = -1
         self.actionStatus = ActionStatus.NONE
         self.pre_state = True
         self.thread_run = True
@@ -278,6 +287,7 @@ class GameAction:
             
             if room_num == -1 or room_num == -2:
                 if self.room_num != -1 and self.room_num != -2:
+                    self.last_room_num = self.room_num
                     self.room_num = room_num
                     print("过图")
                     last_room_pos = hero_track[0]
@@ -300,7 +310,7 @@ class GameAction:
                         self.count += 1
                         self.againTimeOut = 0
                         print(f"==================第{self.count}轮==================")
-                    print("房间号：",self.room_num)
+                    print("房间号：",f"{self.last_room_num} -> {self.room_num}(当前)")
                     print("目标",self.directionOfDoorNum(direction))
                 else:
                     print("异常：没检测到英雄")
@@ -328,6 +338,9 @@ class GameAction:
                 waitTime = 0
             else:
                 waitTime = int((time.time() - self.timeOut) * 1000) 
+            if self.control_attack.special_action(self.last_room_num, self.room_num):
+                print('执行特殊动作')
+                continue
             # 超时补救措施
             if waitTime > 5000:
                 outprint = '卡位补救措施'
@@ -386,6 +399,7 @@ class GameAction:
                 self.againTimeOut = time.time()
                 #这里的坐标换成自己的再次挑战所在的坐标就行
                 self.room_num = 0
+                self.last_room_num = 0
                 self.hasKillSZT = False
                 self.timeOut = 0
                 hero_track = deque()
@@ -399,6 +413,8 @@ class GameAction:
                 adb.device().click(*GOHOME)
                 time.sleep(1)
                 adb.device().click(*GOHOME)
+                self.room_num = 0
+                self.last_room_num = 0
                 self.actionStatus = ActionStatus.NONE
             else :
                 outprint = "无目标"

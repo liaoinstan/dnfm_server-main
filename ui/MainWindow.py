@@ -1,8 +1,8 @@
 import sys
 
-from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QHBoxLayout, QPushButton, QVBoxLayout,QStackedLayout, QSizePolicy, QCheckBox, QSlider,QFrame,QDesktopWidget
+from PyQt5.QtCore import Qt, QTimer, QPoint
+from PyQt5.QtGui import QImage, QPixmap, QMouseEvent, QPainter, QPen
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QHBoxLayout, QPushButton, QVBoxLayout, QStackedLayout, QSizePolicy, QCheckBox, QSlider, QFrame, QDesktopWidget
 from ui.SizeHelper import toDp
 import cv2
 from utils.yolov5_onnx import YOLOv5
@@ -12,6 +12,7 @@ import utils.RuntimeData as R
 from config import SHOW_MAP_POINT, SHOW_BUTTON, ALPHA
 
 version = "1.1.0A"
+
 
 class MainWindow(QWidget):
 
@@ -23,6 +24,8 @@ class MainWindow(QWidget):
         self.lastPixmap = None
         self.drawMapPoint = True if SHOW_MAP_POINT else False
         self.drawButton = True if SHOW_BUTTON else False
+        self.mouseContrl = True
+        self.mouseTrack = []
         self.rightBarWidth = toDp(120)
         self.hSpace = toDp(3)
         self.initUI()
@@ -44,6 +47,9 @@ class MainWindow(QWidget):
         spacer.setFixedSize(3, 3)
         self.labelFrame = QLabel(self)
         self.labelFrame.setAlignment(Qt.AlignCenter)
+        self.labelFrame.mousePressEvent = self.onMouseEvent
+        self.labelFrame.mouseMoveEvent = self.onMouseEvent
+        self.labelFrame.mouseReleaseEvent = self.onMouseEvent
         self.startBtn = QPushButton("start")
         self.startBtn.clicked.connect(self.onclick)
         self.resetBtn = QPushButton("reset")
@@ -52,6 +58,8 @@ class MainWindow(QWidget):
         self.checkBoxPoint.stateChanged.connect(self.onCheckBoxChanged)
         self.checkBoxButtons = QCheckBox('技能按钮', self)
         self.checkBoxButtons.stateChanged.connect(self.onCheckBoxChanged)
+        self.checkBoxMouse = QCheckBox('鼠标操作', self)
+        self.checkBoxMouse.stateChanged.connect(self.onCheckBoxChanged)
         self.slider = QSlider()
         self.slider.valueChanged.connect(self.onSliderChanged)
         self.labelAlpha = QLabel('')
@@ -69,6 +77,7 @@ class MainWindow(QWidget):
         vbox.addWidget(self.resetBtn)
         vbox.addWidget(self.checkBoxPoint)
         vbox.addWidget(self.checkBoxButtons)
+        vbox.addWidget(self.checkBoxMouse)
         vbox.addWidget(self.slider)
         vbox.addWidget(self.labelAlpha)
         vbox.addStretch(1)
@@ -87,6 +96,7 @@ class MainWindow(QWidget):
         labelLoading.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.checkBoxPoint.setChecked(self.drawMapPoint)
         self.checkBoxButtons.setChecked(self.drawButton)
+        self.checkBoxMouse.setChecked(self.mouseContrl)
         self.slider.setOrientation(1)  # 设置为垂直方向
         self.slider.setRange(1, 100)
         self.slider.setValue(alpha)
@@ -99,6 +109,7 @@ class MainWindow(QWidget):
         self.resetBtn.setFixedSize(btnWidth, btnHeight)
         self.checkBoxPoint.setFixedSize(btnWidth, btnHeight)
         self.checkBoxButtons.setFixedSize(btnWidth, btnHeight)
+        self.checkBoxMouse.setFixedSize(btnWidth, btnHeight)
         self.slider.setFixedSize(btnWidth, btnHeight)
         self.labelAlpha.setFixedSize(btnWidth, btnHeight)
 
@@ -176,11 +187,48 @@ class MainWindow(QWidget):
             self.drawMapPoint = True if state == 2 else False
         elif self.sender() is self.checkBoxButtons:
             self.drawButton = True if state == 2 else False
+        elif self.sender() is self.checkBoxMouse:
+            self.mouseContrl = True if state == 2 else False
 
     def onSliderChanged(self):
         value = self.slider.value()
         self.labelAlpha.setText(f'透明度:{value}%')
         self.setWindowOpacity(value/100)
+
+    def onMouseEvent(self, evt: QMouseEvent):
+        if not self.mouseContrl:
+            return
+        labelWidth = self.labelFrame.size().width()
+        labelHeight = self.labelFrame.size().height()
+        pixWidth = self.labelFrame.pixmap().size().width()
+        pixHeight = self.labelFrame.pixmap().size().height()
+        labelRate = labelHeight/labelWidth
+        pixRate = pixHeight/pixWidth
+        print("label:", labelWidth, labelHeight, "pix:", pixWidth, pixHeight)
+        # 窗口坐标转画布坐标
+        if labelRate < pixRate:
+            x = evt.pos().x() - int((labelWidth-pixWidth)/2)
+            y = evt.pos().y()
+        else:
+            x = evt.pos().x()
+            y = evt.pos().y() - int((labelHeight-pixHeight)/2)
+        # 画布坐标转手机坐标
+        rate = pixWidth/R.FRAME_WIDTH
+        x = int(x/rate)
+        y = int(y/rate)
+        if evt.type() == 2:
+            # 按下
+            self.mouseTrack.append((x, y))
+            self.client.touch_down(x, y, -1, False)
+        elif evt.type() == 3:
+            # 抬起
+            self.mouseTrack.clear()
+            self.client.touch_up(x, y, -1, False)
+        elif evt.type() == 5:
+            # 移动
+            self.mouseTrack.append((x, y))
+            self.client.touch_move(x, y, -1, False)
+        # self.update()
 
     def setComponents(self, client, yolo, action):
         self.client = client
@@ -189,6 +237,19 @@ class MainWindow(QWidget):
 
     def paintEvent(self, event):
         pass
+        # super().paintEvent(event)
+        # painter = QPainter(self)
+        # painter.setRenderHint(painter.Antialiasing)
+        # pen = QPen(Qt.red)
+        # pen.setWidth(2)
+        # painter.setPen(pen)
+        # painter.setBrush(Qt.red)
+        # lastPoint = None
+        # painter.drawLine(QPoint(50,50),QPoint(850,850))
+        # for point in self.mouseTrack:
+        #     if lastPoint:
+        #         painter.drawLine(QPoint(lastPoint[0], lastPoint[1]), QPoint(point[0], point[1]))
+        #     lastPoint = point
 
     def resizeEvent(self, event):
         if event.oldSize().width() != -1:
@@ -206,10 +267,10 @@ class MainWindow(QWidget):
         self.yolo.stop()
         self.client.stop()
         self.action.quit()
-        
+
     def onConnect(self):
         self.sbox.setCurrentIndex(0)
-    
+
     def onDisConnect(self):
         self.sbox.setCurrentIndex(1)
 
