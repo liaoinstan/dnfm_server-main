@@ -25,7 +25,7 @@ class Hero:
     def get_auto_skill(self) -> List[str]:
         pass
 
-    def special_action(self):
+    def special_action(self, last_room_num, room_num):
         pass
 
     def skill(self, name, t=0, need_print=True, prefix="释放预定技能"):
@@ -133,7 +133,7 @@ class Hero:
             self.ctrl.attack(False)
             time.sleep(0.1)
             self.ctrl.attack()
-        elif abs(hero_pos[1]-close_monster_point[1]) < 0.1 and abs(hero_pos[0]-close_monster_point[0]) < 0.15:
+        elif abs(hero_pos[1]-close_monster_point[1]) < 0.1 and abs(hero_pos[0]-close_monster_point[0]) < 0.25:
             timeGap = int((time.time() - self.last_auto_skill_time) * 1000)
             if timeGap > 2500:
                 skills = self.get_auto_skill()
