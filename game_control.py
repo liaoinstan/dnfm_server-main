@@ -118,12 +118,16 @@ class GameControl:
         self.adb.touch_down(x, y,2)
         time.sleep(0.05)
         self.adb.touch_up(x, y,2)
-    def click(self, x, y, t=0.1):
+    def click(self, x, y, t=0.1, ramdon = False, convert = True):
         self.reset()
         time.sleep(0.15)
-        self.adb.touch_down(x, y)
+        if ramdon:
+            x, y = self._ramdon_xy(x, y)
+        self.adb.touch_down(x, y, convert = convert)
         time.sleep(t)
-        self.adb.touch_up(x, y)
+        if ramdon:
+            x, y = self._ramdon_xy(x, y)
+        self.adb.touch_up(x, y, convert = convert)
     def reset(self):
         self.move(0)
         self.attack(False)

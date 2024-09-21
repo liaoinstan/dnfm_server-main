@@ -312,7 +312,8 @@ class YOLOv5:
         self.thread.daemon = True  # 设置为守护线程（可选）
         self.thread.start()
     def thread(self):
-        session = ort.InferenceSession(self.path,providers=['CPUExecutionProvider'])#'CUDAExecutionProvider',
+        session = ort.InferenceSession(self.path,providers=['CUDAExecutionProvider','CPUExecutionProvider']) #使用GPU推理，需要Cuda环境，否则运行报错
+        # session = ort.InferenceSession(self.path,providers=['CUDAExecutionProvider','CPUExecutionProvider'])
         # 获取模型输入输出信息
         input_name = session.get_inputs()[0].name
         output_names = [output.name for output in session.get_outputs()]
@@ -341,7 +342,7 @@ class YOLOv5:
             if self.stopFlag:
                 break
             self.infer_queue.put([img,output])
-            self.onFrame(img, output)
+            self.onFrame(img.copy(), output)
     def stop(self):
         self.stopFlag = True
     def from_numpy(self,x):

@@ -8,7 +8,9 @@ import cv2
 from utils.yolov5_onnx import YOLOv5
 from utils.BWJRoomHelperV2 import roomHelper
 from utils.ButtonHelper import buttonHelper
+from game_action import GameAction
 import utils.RuntimeData as R
+from scrcpy_adb import ScrcpyADB
 from config import SHOW_MAP_POINT, SHOW_BUTTON, ALPHA
 
 version = "1.1.0A"
@@ -54,6 +56,8 @@ class MainWindow(QWidget):
         self.startBtn.clicked.connect(self.onclick)
         self.resetBtn = QPushButton("reset")
         self.resetBtn.clicked.connect(self.onclick)
+        self.screenshotBtn = QPushButton("screenshot")
+        self.screenshotBtn.clicked.connect(self.onclick)
         self.checkBoxPoint = QCheckBox('地图锚点', self)
         self.checkBoxPoint.stateChanged.connect(self.onCheckBoxChanged)
         self.checkBoxButtons = QCheckBox('技能按钮', self)
@@ -75,6 +79,7 @@ class MainWindow(QWidget):
         vbox = QVBoxLayout()
         vbox.addWidget(self.startBtn)
         vbox.addWidget(self.resetBtn)
+        vbox.addWidget(self.screenshotBtn)
         vbox.addWidget(self.checkBoxPoint)
         vbox.addWidget(self.checkBoxButtons)
         vbox.addWidget(self.checkBoxMouse)
@@ -107,6 +112,7 @@ class MainWindow(QWidget):
         btnHeight = toDp(30)
         self.startBtn.setFixedSize(btnWidth, btnHeight)
         self.resetBtn.setFixedSize(btnWidth, btnHeight)
+        self.screenshotBtn.setFixedSize(btnWidth, btnHeight)
         self.checkBoxPoint.setFixedSize(btnWidth, btnHeight)
         self.checkBoxButtons.setFixedSize(btnWidth, btnHeight)
         self.checkBoxMouse.setFixedSize(btnWidth, btnHeight)
@@ -148,6 +154,15 @@ class MainWindow(QWidget):
             if self.drawButton:
                 buttonHelper.drawButtons(frame, self.action.ctrl.config)
 
+            matchDict = self.action.matchResultMap.copy()
+            if len(matchDict) > 0:
+                for matchDataList in matchDict.values():
+                    for matchData in matchDataList:
+                        cx, cy, w, h = matchData[0], matchData[1], matchData[2], matchData[3]
+                        top_left = (cx - w//2, cy-h//2)
+                        bottom_right = (top_left[0] + w, top_left[1] + h)
+                        cv2.rectangle(frame, top_left, bottom_right, (0, 0, 255), 2)
+
             image = QImage(
                 frame,
                 frame.shape[1],
@@ -176,11 +191,18 @@ class MainWindow(QWidget):
             if self.startBtn.text() == "start":
                 self.startBtn.setText("stop")
                 self.action.stop_event = False
+                # self.action.goToWorkAction.start()
+                self.action.changeHeroAction.start(6)
             else:
                 self.startBtn.setText("start")
                 self.action.stop_event = True
+                self.action.goToWorkAction.stop()
+                self.action.fixAction.stop()
+                self.action.changeHeroAction.stop()
         elif self.sender() is self.resetBtn:
             self.action.reset()
+        elif self.sender() is self.screenshotBtn:
+            self.client.screenshot()
 
     def onCheckBoxChanged(self, state):
         if self.sender() is self.checkBoxPoint:
@@ -198,13 +220,15 @@ class MainWindow(QWidget):
     def onMouseEvent(self, evt: QMouseEvent):
         if not self.mouseContrl:
             return
+        if self.labelFrame is None or self.labelFrame.pixmap() is None:
+            return
         labelWidth = self.labelFrame.size().width()
         labelHeight = self.labelFrame.size().height()
         pixWidth = self.labelFrame.pixmap().size().width()
         pixHeight = self.labelFrame.pixmap().size().height()
         labelRate = labelHeight/labelWidth
         pixRate = pixHeight/pixWidth
-        print("label:", labelWidth, labelHeight, "pix:", pixWidth, pixHeight)
+        # print("label:", labelWidth, labelHeight, "pix:", pixWidth, pixHeight)
         # 窗口坐标转画布坐标
         if labelRate < pixRate:
             x = evt.pos().x() - int((labelWidth-pixWidth)/2)
@@ -231,9 +255,9 @@ class MainWindow(QWidget):
         # self.update()
 
     def setComponents(self, client, yolo, action):
-        self.client = client
+        self.client: ScrcpyADB = client
         self.yolo = yolo
-        self.action = action
+        self.action: GameAction = action
 
     def paintEvent(self, event):
         pass

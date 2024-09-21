@@ -2,6 +2,7 @@
 import cv2
 from adbutils import adb
 import time
+import datetime
 import scrcpy
 from config import FRAME_WIDTH
 import subprocess
@@ -28,6 +29,7 @@ class ScrcpyADB:
         self.onConnect = onConnect
         self.onDisconnect = onDisconnect
         self.connectThread:ConnectThread = None
+        self.lastFrame = None
         self.init()
         
     def init(self):
@@ -116,7 +118,14 @@ class ScrcpyADB:
 
     def on_frame(self, frame: cv2.Mat):
         if frame is not None:
+            self.lastFrame = frame
             self.queue.put(frame)
+            
+    def screenshot(self):
+        currentTime = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')[:-3]
+        fileName = f'screenshot_{currentTime}.jpg'
+        cv2.imwrite(f'screenshort/{fileName}',self.lastFrame)
+        print(f"已生成截图: {fileName}")
             
     def on_disconnect(self):
         print("设备已断连")
