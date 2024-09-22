@@ -3,8 +3,10 @@ import utils.MatchHelper as MatchHelper
 import random
 import time
 from action.BaseAction import BaseAction
+from action.ChangeHeroAction import ChangeHeroAction
 from enum import Enum
 from config import CENTER_POINT
+import utils.RuntimeData as R
 
 
 class GoToWorkAction(BaseAction):
@@ -27,6 +29,10 @@ class GoToWorkAction(BaseAction):
         self.timeOut = 0
         self.runing = False
         self.step = -1
+        self.changeHeroAction:ChangeHeroAction
+        
+    def setAction(self, changeHeroAction):
+        self.changeHeroAction = changeHeroAction
 
     def start(self):
         self.reset()
@@ -44,21 +50,21 @@ class GoToWorkAction(BaseAction):
         if not self.runing:
             return False
         
-        resultZero = self.match(image, GoToWorkAction.Path.ZERO.value)
-        if resultZero:
-            print("疲劳耗尽")
-            time.sleep(1)
-            self.stop()
-            
-            return True
-        else:
-            print("还有疲劳")
+        # resultZero = self.match(image, GoToWorkAction.Path.ZERO.value)
+        # if resultZero:
+        #     print(f"英雄{R.CURRENT_HERO},疲劳耗尽,下一位")
+        #     time.sleep(1)
+        #     self.stop()
+        #     self.changeHeroAction.start()
+        #     return True
+        # else:
+        #     pass
 
         if self.step == -1:
             # 超过3秒没检测到标志，自动取消寻路流程
             if self.timeOut != 0:
                 waitTime = int((time.time() - self.timeOut) * 1000)
-                if waitTime > 3000:
+                if waitTime > 10000:
                     print("取消自动寻路")
                     self.stop()
             resultWt = self.match(image, GoToWorkAction.Path.WT.value)

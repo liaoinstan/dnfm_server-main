@@ -11,7 +11,7 @@ from utils.ButtonHelper import buttonHelper
 from game_action import GameAction
 import utils.RuntimeData as R
 from scrcpy_adb import ScrcpyADB
-from config import SHOW_MAP_POINT, SHOW_BUTTON, ALPHA
+from config import SHOW_MAP_POINT, SHOW_BUTTON, ALPHA, WINDOW_SCALE
 
 version = "1.1.0A"
 
@@ -30,6 +30,7 @@ class MainWindow(QWidget):
         self.mouseTrack = []
         self.rightBarWidth = toDp(120)
         self.hSpace = toDp(3)
+        self.heroStr = "1,2,3"
         self.initUI()
 
     def initUI(self):
@@ -126,9 +127,11 @@ class MainWindow(QWidget):
         window = self.geometry()
         w = R.FRAME_WIDTH+self.rightBarWidth+self.hSpace
         h = int(R.FRAME_WIDTH*R.RATE)
-        x = screen.width() - w
-        y = screen.height() - h
-        self.setGeometry(x - 100, y - 150, w, h)
+        w = int(w * WINDOW_SCALE)
+        h = int(h * WINDOW_SCALE)
+        x = screen.width() - w - 100
+        y = screen.height() - h - 150
+        self.setGeometry(x, y, w, h)
 
     def onFrame(self, frame, output):
         if not self.isVisible():
@@ -186,13 +189,18 @@ class MainWindow(QWidget):
             height = int(width * rate)
         return pix.scaled(width, height, Qt.KeepAspectRatio)
 
+    def __createHeroList(self):
+        if self.heroStr is not None and len(self.heroStr) > 0:
+            R.HEROS = {int(x): False for x in self.heroStr.split(",")}
+
     def onclick(self):
         if self.sender() is self.startBtn:
             if self.startBtn.text() == "start":
                 self.startBtn.setText("stop")
                 self.action.stop_event = False
                 # self.action.goToWorkAction.start()
-                self.action.changeHeroAction.start(6)
+                self.__createHeroList()
+                self.action.changeHeroAction.start()
             else:
                 self.startBtn.setText("start")
                 self.action.stop_event = True

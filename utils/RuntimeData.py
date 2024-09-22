@@ -5,6 +5,8 @@ DEVICE_HEIGHT: int
 RATE: float = 0.45
 SCALE: float = 0
 
+HEROS = {}
+CURRENT_HERO = None
 
 def setDeviceResolution(width: int, height: int):
     global DEVICE_WIDTH, DEVICE_HEIGHT, RATE, SCALE

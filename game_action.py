@@ -11,6 +11,7 @@ from utils.BWJRoomHelperV2 import Direction, roomHelper
 from action.GoToWorkAction import GoToWorkAction
 from action.FixAction import FixAction
 from action.ChangeHeroAction import ChangeHeroAction
+from action.DialogAction import DialogAction
 import random
 import utils.MatchHelper as MatchHelper
 from config import AGAIN,GOHOME,REPAIR_TIMES
@@ -208,6 +209,9 @@ class GameAction:
         self.goToWorkAction = GoToWorkAction(self.ctrl, self.matchResultMap)
         self.fixAction = FixAction(self.ctrl, self.matchResultMap)
         self.changeHeroAction = ChangeHeroAction(self.ctrl, self.matchResultMap)
+        self.dialogAction = DialogAction(self.ctrl, self.matchResultMap)
+        self.goToWorkAction.setAction(self.changeHeroAction)
+        self.changeHeroAction.setAction(self.goToWorkAction)
     def quit(self):
         self.thread_run = True
     def reset(self):
@@ -225,6 +229,7 @@ class GameAction:
         self.goToWorkAction.stop()
         self.fixAction.stop()
         self.changeHeroAction.stop()
+        self.dialogAction.stop()
         self.thread.start()
     def convertDirection(self, dNum:int):
         if dNum == 8:
@@ -258,6 +263,8 @@ class GameAction:
                 continue
             if self.changeHeroAction.actionChangeHero(image):
                 continue
+            if self.dialogAction.actionCloseDialog(image):
+                continue
             
             # 检测是否通关
             card = boxs[boxs[:,5]==3][:,:4]
@@ -270,6 +277,7 @@ class GameAction:
                 # 每5把修一次装备，首次也会维修
                 if self.count % REPAIR_TIMES == 1:
                     self.fixAction.start()
+                self.dialogAction.start()
                 time.sleep(3)
                 
             # 检测是否重开
@@ -285,6 +293,7 @@ class GameAction:
                     self.last_room_num = 0
                     self.hasKillSZT = False
                     self.timeOut = 0
+                    self.dialogAction.stop()
                     hero_track = deque()
                     hero_track.appendleft([0,0])
                 
@@ -359,7 +368,7 @@ class GameAction:
             self.calculate_hero_pos(hero_track,hero)#计算英雄位置
             if self.againTimeOut != 0:
                 waitAgainTime = int((time.time() - self.againTimeOut) * 1000) 
-                if waitAgainTime > 7000:
+                if waitAgainTime > 10000:
                     self.actionStatus = ActionStatus.GOHOME
             # 计算操作是否超时(已经结束关卡，或等待再次挑战期间不计时)
             if self.timeOut == 0 or self.isFinish or self.againTimeOut != 0:
@@ -422,6 +431,7 @@ class GameAction:
                 time.sleep(2)
                 # 获取连接的设备列表
                 adb.device().click(*AGAIN)
+                time.sleep(1)
                 if self.againTimeOut ==0:
                     self.againTimeOut = time.time()
                 # self.actionStatus = ActionStatus.NONE
