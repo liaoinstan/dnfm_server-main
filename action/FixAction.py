@@ -30,6 +30,7 @@ class FixAction(BaseAction):
         
     def stop(self):
         self.reset()
+        self.removeAllResults()
         self.runing = False
 
     def reset(self):

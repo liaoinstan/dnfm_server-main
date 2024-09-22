@@ -40,6 +40,7 @@ class GoToWorkAction(BaseAction):
 
     def stop(self):
         self.reset()
+        self.removeAllResults()
         self.runing = False
 
     def reset(self):
@@ -58,7 +59,7 @@ class GoToWorkAction(BaseAction):
         #     self.changeHeroAction.start()
         #     return True
         # else:
-        #     pass
+        #     
 
         if self.step == -1:
             # 超过3秒没检测到标志，自动取消寻路流程

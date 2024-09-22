@@ -24,6 +24,7 @@ class DialogAction(BaseAction):
         self.runing = True
         
     def stop(self):
+        self.removeAllResults()
         self.runing = False
 
     def actionCloseDialog(self, image):

@@ -30,6 +30,7 @@ class ScrcpyADB:
         self.onDisconnect = onDisconnect
         self.connectThread:ConnectThread = None
         self.lastFrame = None
+        self.client = None
         self.init()
         
     def init(self):
@@ -74,7 +75,8 @@ class ScrcpyADB:
         self.frame_idx = -1
         
     def stop(self):
-        self.client.stop()        
+        if self.client:
+            self.client.stop()        
 
     def convetPoint(self, x, y):
         return x*R.SCALE, y*R.SCALE

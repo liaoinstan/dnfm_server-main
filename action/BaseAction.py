@@ -5,6 +5,13 @@ import utils.MatchHelper as MatchHelper
 
 class BaseAction:
     
+    '''
+    matchResultMap
+    {
+        "fix/fix_btn_xl.jpg" : [(cx,cy,w,h),(cx,cy,w,h)]
+    }
+    '''
+    
     def __init__(self, ctrl, matchResultMap: dict):
         self.ctrl:GameControl = ctrl
         self.matchResultMap = matchResultMap
@@ -35,3 +42,6 @@ class BaseAction:
                 self.matchResultMap[enum.value] = resultMap[enum.value]
             else:
                 self.matchResultMap.pop(enum.value, None)
+                
+    def removeAllResults(self):
+        self.updateMatchResultMap({})

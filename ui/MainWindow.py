@@ -200,7 +200,7 @@ class MainWindow(QWidget):
                 self.action.stop_event = False
                 # self.action.goToWorkAction.start()
                 self.__createHeroList()
-                self.action.changeHeroAction.start()
+                # self.action.changeHeroAction.start()
             else:
                 self.startBtn.setText("start")
                 self.action.stop_event = True
