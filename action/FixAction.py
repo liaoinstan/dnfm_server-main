@@ -41,6 +41,7 @@ class FixAction(BaseAction):
             return False
         if self.step == 0:
             resultBackpack = self.match(image, FixAction.Path.BACKPACK.value)
+            print("自动维修装备")
             if resultBackpack:
                 self.click(resultBackpack)
                 time.sleep(random.uniform(0.8, 1.2))
@@ -66,7 +67,7 @@ class FixAction(BaseAction):
                 self.click(resultFixClose)
                 time.sleep(random.uniform(0.8, 1.2))
                 self.step = 4
-            time.sleep(0.3)
+            time.sleep(1)
         elif self.step == 4:
             resultBack = self.match(image, FixAction.Path.FIX_BACK.value)
             if resultBack:

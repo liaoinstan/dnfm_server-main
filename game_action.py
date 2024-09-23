@@ -12,6 +12,8 @@ from action.GoToWorkAction import GoToWorkAction
 from action.FixAction import FixAction
 from action.ChangeHeroAction import ChangeHeroAction
 from action.DialogAction import DialogAction
+from action.AgainAction import AgainAction
+from action.ActionManager import actionManager
 import random
 import utils.MatchHelper as MatchHelper
 from config import AGAIN,GOHOME,REPAIR_TIMES
@@ -178,7 +180,7 @@ from hero.guiqi import Guiqi
 from hero.jianhun import Jianhun
 class GameAction:
     def __init__(self, ctrl: GameControl,queue):
-        self.checkHero = "剑魂"
+        self.checkHero = "鬼泣"
         # ---------- 英雄配置：
         if self.checkHero == "奶妈":
             self.control_attack = Naima(ctrl)
@@ -189,7 +191,6 @@ class GameAction:
         self.queue = queue
         self.ctrl = ctrl
         self.againRetryCount = 0
-        self.actionStatus = ActionStatus.NONE
         self.pre_state = True #是否过图中
         self.stop_event = True
         self.reset_event = False
@@ -197,7 +198,6 @@ class GameAction:
         self.last_room_num = -1
         self.hasKillSZT = False
         self.timeOut = 0
-        self.againTimeOut = 0
         self.buwanjia = [8,10,10,11,9,10,10,10,10,10,8,8]
         self.thread_run = True
         self.thread = threading.Thread(target=self.control)  # 创建线程，并指定目标函数
@@ -209,9 +209,10 @@ class GameAction:
         self.goToWorkAction = GoToWorkAction(self.ctrl, self.matchResultMap)
         self.fixAction = FixAction(self.ctrl, self.matchResultMap)
         self.changeHeroAction = ChangeHeroAction(self.ctrl, self.matchResultMap)
-        self.dialogAction = DialogAction(self.ctrl, self.matchResultMap)
+        self.againAction = AgainAction(self.ctrl, self.matchResultMap)
         self.goToWorkAction.setAction(self.changeHeroAction)
         self.changeHeroAction.setAction(self.goToWorkAction)
+        actionManager.init(self.goToWorkAction, self.changeHeroAction, self.fixAction, self.againAction)
     def quit(self):
         self.thread_run = True
     def reset(self):
@@ -220,7 +221,6 @@ class GameAction:
         self.hasKillSZT = False
         self.room_num = -1
         self.last_room_num = -1
-        self.actionStatus = ActionStatus.NONE
         self.pre_state = True
         self.thread_run = True
         self.thread = threading.Thread(target=self.control)  # 创建线程，并指定目标函数
@@ -229,7 +229,7 @@ class GameAction:
         self.goToWorkAction.stop()
         self.fixAction.stop()
         self.changeHeroAction.stop()
-        self.dialogAction.stop()
+        self.againAction.stop()
         self.thread.start()
     def convertDirection(self, dNum:int):
         if dNum == 8:
@@ -250,7 +250,6 @@ class GameAction:
                 time.sleep(0.001)
                 self.count = 1
                 self.ctrl.reset()
-                self.matchResultMap.clear()
                 continue
             if self.queue.empty():
                 time.sleep(0.001)
@@ -259,11 +258,11 @@ class GameAction:
             
             if self.goToWorkAction.actionWayToBWJ(image):
                 continue
-            if self.fixAction.actionFix(image):
-                continue
             if self.changeHeroAction.actionChangeHero(image):
                 continue
-            if self.dialogAction.actionCloseDialog(image):
+            if self.fixAction.actionFix(image):
+                continue
+            if self.againAction.actionAgain(image):
                 continue
             
             # 检测是否通关
@@ -271,13 +270,11 @@ class GameAction:
             if len(card)>=8:
                 time.sleep(1)
                 self.ctrl.click(0.25*image.shape[0],0.25*image.shape[1])
-                self.actionStatus = ActionStatus.AGAIN
                 self.isFinish = True
                 print("已检测到卡牌")
                 # 每5把修一次装备，首次也会维修
                 if self.count % REPAIR_TIMES == 1:
                     self.fixAction.start()
-                self.dialogAction.start()
                 time.sleep(3)
                 
             # 检测是否重开
@@ -285,17 +282,16 @@ class GameAction:
                 resultLoading = MatchHelper.match_template(image, "way_to_bwj/loading.jpg")
                 if resultLoading:
                     self.count += 1
-                    print(f"\n==================第{self.count}轮==================")
-                    self.actionStatus = ActionStatus.NONE
-                    self.againTimeOut = 0
+                    print(f"\n==================第{self.count}轮==================\n")
                     self.isFinish = False
                     self.room_num = 0
                     self.last_room_num = 0
                     self.hasKillSZT = False
                     self.timeOut = 0
-                    self.dialogAction.stop()
+                    self.againAction.stop()
                     hero_track = deque()
                     hero_track.appendleft([0,0])
+                    continue
                 
             # 检测当前房间
             room_num = roomHelper.parseRoomNum(image)
@@ -366,12 +362,8 @@ class GameAction:
             angle = 0
             outprint = ''
             self.calculate_hero_pos(hero_track,hero)#计算英雄位置
-            if self.againTimeOut != 0:
-                waitAgainTime = int((time.time() - self.againTimeOut) * 1000) 
-                if waitAgainTime > 10000:
-                    self.actionStatus = ActionStatus.GOHOME
-            # 计算操作是否超时(已经结束关卡，或等待再次挑战期间不计时)
-            if self.timeOut == 0 or self.isFinish or self.againTimeOut != 0:
+            # 计算操作是否超时(已经结束关卡不计时)
+            if self.timeOut == 0 or self.isFinish:
                 waitTime = 0
             else:
                 waitTime = int((time.time() - self.timeOut) * 1000) 
@@ -425,27 +417,19 @@ class GameAction:
                 self.ctrl.attack(False)
                 if self.timeOut == 0:
                     self.timeOut = time.time()
-            elif self.actionStatus == ActionStatus.AGAIN:
-                print("\n检测再次挑战")
+            elif self.isFinish:
+                print("\n准备检测再次挑战")
                 self.ctrl.move(0)
-                time.sleep(2)
-                # 获取连接的设备列表
-                adb.device().click(*AGAIN)
-                time.sleep(1)
-                if self.againTimeOut ==0:
-                    self.againTimeOut = time.time()
-                # self.actionStatus = ActionStatus.NONE
-            elif self.actionStatus == ActionStatus.GOHOME:
-                print("\n返回城镇")
-                self.ctrl.move(0)
-                self.againTimeOut = 0
-                time.sleep(1)
-                adb.device().click(*GOHOME)
-                time.sleep(1)
-                adb.device().click(*GOHOME)
-                self.room_num = 0
-                self.last_room_num = 0
-                self.actionStatus = ActionStatus.NONE
+                self.againAction.start()
+            # elif self.actionStatus == ActionStatus.GOHOME:
+            #     print("\n返回城镇")
+            #     self.ctrl.move(0)
+            #     time.sleep(1)
+            #     # adb.device().click(*GOHOME)
+            #     time.sleep(1)
+            #     # adb.device().click(*GOHOME)
+            #     self.room_num = 0
+            #     self.last_room_num = 0
             else :
                 outprint = "无目标"
                 if self.room_num == 4:

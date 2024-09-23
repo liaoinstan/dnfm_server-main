@@ -99,11 +99,13 @@ class Jianhun(Hero):
                 self.ctrl.move(1)
                 time.sleep(0.3)
                 self.skill("乱舞")
-                time.sleep(0.2)
+                time.sleep(0.5)
                 self.skill("乱舞")
-                time.sleep(0.2)
+                time.sleep(0.5)
                 self.skill("乱舞")
-                time.sleep(0.8)
+                time.sleep(0.5)
+                self.skill("乱舞")
+                time.sleep(0.5)
             self.pre_room_num = MapNumber
             return 0
         else:

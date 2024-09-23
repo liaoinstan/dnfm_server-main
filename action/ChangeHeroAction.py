@@ -30,9 +30,9 @@ class ChangeHeroAction(BaseAction):
     def setAction(self, goToWorkAction):
         self.goToWorkAction = goToWorkAction
 
-    def start(self):
+    def start(self, step = 0):
         self.reset()
-        self.step = 0
+        self.step = step
         self.runing = True
 
     def stop(self):
@@ -83,12 +83,13 @@ class ChangeHeroAction(BaseAction):
                             print("选择英雄：", heroNum)
                             self.click(resultTags[heroNum-1])
                             time.sleep(random.uniform(0.8, 1.2))
+                            R.CURRENT_HERO = heroNum
                             self.step = 3
                         else:
                             print("异常，英雄检测失败")
                             self.stop()
                     else:
-                        print("设定英雄疲劳全部耗尽，停止脚本")
+                        print("设定的角色疲劳已全部耗尽,停止脚本。")
                         self.stop
                         return True
                 else:
@@ -110,9 +111,10 @@ class ChangeHeroAction(BaseAction):
         def hasFinish(heroNum, width):
             endX = resultTags[heroNum-1][0]
             startX = endX - width
-            for zero in resultZeros:
-                if zero[0] > startX and zero[0] < endX:
-                    return True
+            if resultZeros is not None:
+                for zero in resultZeros:
+                    if zero[0] > startX and zero[0] < endX:
+                        return True
             return False
         # 只有一个英雄的情况暂时不写
         if len(resultTags) >= 2:

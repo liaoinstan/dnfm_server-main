@@ -6,6 +6,7 @@ from PIL import Image,ImageOps
 import threading
 import time
 import onnxruntime as ort
+from action.ActionManager import actionManager
 def resize_img( im):
     target_size = 640   # 目标尺寸
     width, height = im.size
@@ -317,7 +318,11 @@ class YOLOv5:
         # 获取模型输入输出信息
         input_name = session.get_inputs()[0].name
         output_names = [output.name for output in session.get_outputs()]
-        print("当前使用的硬件加速器类型为:", session.get_providers()[0])
+        currentProvider = session.get_providers()[0]
+        if currentProvider == "CUDAExecutionProvider":
+            print("当前使用的硬件加速器类型为:", session.get_providers()[0])
+        else:
+            print("GPU启用失败,请检查你的运行环境是否配置正确,此次运行加速器降级调整为:", session.get_providers()[0])
         while True:
             if self.image_queue.empty():
                 time.sleep(0.005)
@@ -342,6 +347,7 @@ class YOLOv5:
             if self.stopFlag:
                 break
             self.infer_queue.put([img,output])
+            actionManager.image = img
             self.onFrame(img.copy(), output)
     def stop(self):
         self.stopFlag = True

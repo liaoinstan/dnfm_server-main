@@ -11,6 +11,7 @@ from utils.ButtonHelper import buttonHelper
 from game_action import GameAction
 import utils.RuntimeData as R
 from scrcpy_adb import ScrcpyADB
+from action.ActionManager import actionManager
 from config import SHOW_MAP_POINT, SHOW_BUTTON, ALPHA, WINDOW_SCALE
 
 version = "1.1.0A"
@@ -197,10 +198,11 @@ class MainWindow(QWidget):
         if self.sender() is self.startBtn:
             if self.startBtn.text() == "start":
                 self.startBtn.setText("stop")
+                # self.action.isFinish = True
+                R.CURRENT_HERO = 2
                 self.action.stop_event = False
-                # self.action.goToWorkAction.start()
                 self.__createHeroList()
-                # self.action.changeHeroAction.start()
+                actionManager.start()
             else:
                 self.startBtn.setText("start")
                 self.action.stop_event = True

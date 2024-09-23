@@ -1,6 +1,8 @@
 from abc import abstractmethod
 from game_control import GameControl
 import utils.MatchHelper as MatchHelper
+import datetime
+import cv2
 
 
 class BaseAction:
@@ -26,6 +28,12 @@ class BaseAction:
             self.updateMatchResultMap({path: [result]})
         else:
             self.updateMatchResultMap({})
+            
+        # if path == 'way_to_bwj/loading.jpg':
+        #     currentTime = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')[:-3]
+        #     fileName = f'screenshot_{currentTime}.jpg'
+        #     print(fileName, result)
+        #     cv2.imwrite(f'screenshort/{fileName}',image)
         return result
 
     def click(self, result):

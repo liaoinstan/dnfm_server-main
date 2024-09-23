@@ -30,15 +30,19 @@ class DialogAction(BaseAction):
     def actionCloseDialog(self, image):
         if not self.runing:
             return False
-
-        resultCheckBox = self.match(image, DialogAction.Path.NOT_SHOW.value)
-        if resultCheckBox:
-            self.click(resultCheckBox)
+        
+        resultYes = self.match(image, DialogAction.Path.YES.value)
+        if resultYes:
+            print("检测到弹窗，关闭。")
+            resultCheckBox = self.match(image, DialogAction.Path.NOT_SHOW.value)
+            if resultCheckBox:
+                time.sleep(random.uniform(0.8, 1.2))
+                # self.click(resultCheckBox)
             time.sleep(random.uniform(0.8, 1.2))
-            resultYes = self.match(image, DialogAction.Path.YES.value)
-            if resultYes:
-                self.click(resultYes)
-                time.sleep(random.uniform(2, 3))
-                self.stop()
+            self.click(resultYes)
+            time.sleep(random.uniform(1, 2))
+            self.stop()
+        else:
+            print("未发现弹窗")
 
         return False
