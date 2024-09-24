@@ -9,7 +9,7 @@ import subprocess
 import re
 from utils.BWJRoomHelperV2 import roomHelper
 import utils.RuntimeData as R
-import sys
+import os
 import threading
 
 # def globalExceptionHandler(exctype, value, traceback):
@@ -18,7 +18,7 @@ import threading
 #     print(f"Exception type: {exctype}")
 #     print(f"Exception value: {value}")
 #     print(f"Traceback: {traceback}")
-    
+
 # sys.excepthook = globalExceptionHandler
 
 
@@ -28,11 +28,11 @@ class ScrcpyADB:
         self.max_fps = max_fps
         self.onConnect = onConnect
         self.onDisconnect = onDisconnect
-        self.connectThread:ConnectThread = None
+        self.connectThread: ConnectThread = None
         self.lastFrame = None
         self.client = None
         self.init()
-        
+
     def init(self):
         # 获取adb设备列表
         devices = adb.device_list()
@@ -56,7 +56,7 @@ class ScrcpyADB:
         output, error = process.communicate()
         if output:
             # 正则解析返回结果
-            print("手机分辨率",output.decode())
+            print("手机分辨率", output.decode())
             result = re.search(r'(\d+)x(\d+)', output.decode())
             # 初始化
             R.setDeviceResolution(int(result.group(2)), int(result.group(1)))
@@ -73,25 +73,25 @@ class ScrcpyADB:
         self.client = client
         self.last_screen = None
         self.frame_idx = -1
-        
+
     def stop(self):
         if self.client:
-            self.client.stop()        
+            self.client.stop()
 
     def convetPoint(self, x, y):
         return x*R.SCALE, y*R.SCALE
 
-    def touch_down(self, x: int or float, y: int or float, id: int = -1, convert = True):
+    def touch_down(self, x: int or float, y: int or float, id: int = -1, convert=True):
         if convert:
             x, y = self.convetPoint(x, y)
         self.client.control.touch(int(x), int(y), scrcpy.ACTION_DOWN, id)
 
-    def touch_move(self, x: int or float, y: int or float, id: int = -1, convert = True):
+    def touch_move(self, x: int or float, y: int or float, id: int = -1, convert=True):
         if convert:
             x, y = self.convetPoint(x, y)
         self.client.control.touch(int(x), int(y), scrcpy.ACTION_MOVE, id)
 
-    def touch_up(self, x: int or float, y: int or float, id: int = -1, convert = True):
+    def touch_up(self, x: int or float, y: int or float, id: int = -1, convert=True):
         if convert:
             x, y = self.convetPoint(x, y)
         self.client.control.touch(int(x), int(y), scrcpy.ACTION_UP, id)
@@ -104,14 +104,14 @@ class ScrcpyADB:
         end_y: int,
         move_step_length: int = 5,
         move_steps_delay: float = 0.005,
-        convert = True
+        convert=True
     ):
         if convert:
             start_x, start_y = self.convetPoint(start_x, start_y)
             end_x, end_y = self.convetPoint(end_x, end_y)
         self.client.control.swipe(start_x, start_y, end_x, end_y, move_step_length, move_steps_delay)
 
-    def tap(self, x: int or float, y: int or float, convert = True):
+    def tap(self, x: int or float, y: int or float, convert=True):
         if convert:
             x, y = self.convetPoint(x, y)
         self.touch_start(x, y)
@@ -122,13 +122,16 @@ class ScrcpyADB:
         if frame is not None:
             self.lastFrame = frame
             self.queue.put(frame)
-            
+
     def screenshot(self):
+        folder_name = "screenshort"
+        if not os.path.exists(folder_name):
+            os.makedirs(folder_name)
         currentTime = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')[:-3]
         fileName = f'screenshot_{currentTime}.jpg'
-        cv2.imwrite(f'screenshort/{fileName}',self.lastFrame)
+        cv2.imwrite(f'{folder_name}/{fileName}', self.lastFrame)
         print(f"已生成截图: {fileName}")
-            
+
     def on_disconnect(self):
         print("设备已断连")
         self.onDisconnect()
@@ -148,13 +151,14 @@ class ConnectThread(threading.Thread):
             self.callback()
             time.sleep(1)
         print(f"Thread {self.name} finished")
-    
+
     def stop(self):
         self.running = False
-        
+
     def start(self):
         self.running = True
         super().start()
+
 
 if __name__ == '__main__':
     client = ScrcpyADB(None, max_fps=15)

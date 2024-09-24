@@ -1,8 +1,6 @@
-import os
-
+from config import LOG_MATCH, TUNING_MATCH
 import cv2
 import numpy as np
-import time
 
 TEMPLATE_DEVICE_WIDTH = 1440
 TEMPLATE_DEVICE_HEIGHT = 3200
@@ -16,6 +14,7 @@ def __resize_template(large_image, template_image):
         caculRate = imageHeight/TEMPLATE_DEVICE_WIDTH
     else:
         caculRate = imageWidth/TEMPLATE_DEVICE_HEIGHT
+    caculRate = caculRate*TUNING_MATCH
     return cv2.resize(template_image, (int(template_image.shape[1]*caculRate), int(template_image.shape[0]*caculRate)))
 
 
@@ -31,6 +30,9 @@ def match_template(large_image, template_image_path, threshold=0.7):
     # 使用模板匹配方法查找匹配位置
     result = cv2.matchTemplate(large_image, template_image, cv2.TM_CCOEFF_NORMED)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+
+    if LOG_MATCH:
+        print("匹配精度：", max_val)
 
     w, h = template_image.shape[1], template_image.shape[0]
 
