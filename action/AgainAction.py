@@ -48,7 +48,7 @@ class AgainAction(BaseAction):
             return False
         if self.timeOut != 0:
             waitTime = int((time.time() - self.timeOut) * 1000)
-            if waitTime > 15000:
+            if waitTime > 10000:
                 if not self.clickedGoHome:
                     print("再次挑战超时，检测回城")
                     resultGoHome = self.match(image, AgainAction.Path.GOHOME.value)

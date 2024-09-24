@@ -29,7 +29,8 @@ class Hero:
                 Hero.INSTANCE_MAP[heroJob] = hero
                 return hero
             else:
-                print("职业配置错误，使用默认奶奶配置")
+                print(f"职业配置错误，使用默认奶奶配置（职业【{heroJob}】不在hero.py的配置中,请优先处理此问题！）")
+                from hero.naima import Naima
                 return Naima(ctrl)
         
     

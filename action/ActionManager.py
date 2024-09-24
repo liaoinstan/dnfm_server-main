@@ -61,7 +61,8 @@ class ActionManager:
         self.goToWorkAction.stop()
         self.changeHeroAction.stop()
         self.fixAction.stop()
-        self.dialogAction.stop()
+        self.againAction.stop()
+        self.advertAction.stop()
 
 
 actionManager = ActionManager()

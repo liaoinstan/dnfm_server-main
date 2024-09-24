@@ -86,7 +86,7 @@ class ChangeHeroAction(BaseAction):
                             self.stop()
                     else:
                         print("设定的角色疲劳已全部耗尽,停止脚本。")
-                        self.stop
+                        self.stop()
                         return True
                 else:
                     self.checkTagsCount = len(resultTags)

@@ -13,6 +13,7 @@ from action.FixAction import FixAction
 from action.ChangeHeroAction import ChangeHeroAction
 from action.AdvertAction import AdvertAction
 from action.AgainAction import AgainAction
+from action.BlockAction import BlockAction
 from action.ActionManager import actionManager
 import utils.RuntimeData as R
 import random
@@ -192,7 +193,6 @@ class GameAction:
         self.room_num = -1
         self.last_room_num = -1
         self.hasKillSZT = False
-        self.timeOut = 0
         self.buwanjia = [8,10,10,11,9,10,10,10,10,10,8,8]
         self.thread_run = True
         self.thread = threading.Thread(target=self.control)  # 创建线程，并指定目标函数
@@ -206,6 +206,7 @@ class GameAction:
         self.changeHeroAction = ChangeHeroAction(self.ctrl, self.matchResultMap)
         self.againAction = AgainAction(self.ctrl, self.matchResultMap)
         self.advertAction = AdvertAction(self.ctrl, self.matchResultMap)
+        self.blockerAction = BlockAction(self.ctrl)
         actionManager.init(self.goToWorkAction, self.changeHeroAction, self.fixAction, self.againAction, self.advertAction)
     def quit(self):
         self.thread_run = True
@@ -219,12 +220,14 @@ class GameAction:
         self.thread_run = True
         self.thread = threading.Thread(target=self.control)  # 创建线程，并指定目标函数
         self.thread.daemon = True  # 设置为守护线程（可选）
-        self.timeOut = 0
+        self.blockerAction.resetTimer()
+        self.blockerAction.resetRoomTimer()
         self.goToWorkAction.stop()
         self.fixAction.stop()
         self.changeHeroAction.stop()
         self.againAction.stop()
         self.advertAction.stop()
+    
         self.thread.start()
     def convertDirection(self, dNum:int):
         if dNum == 8:
@@ -277,6 +280,7 @@ class GameAction:
                 self.ctrl.click(0.25*image.shape[0],0.25*image.shape[1])
                 self.isFinish = True
                 print("已检测到卡牌")
+                self.blockerAction.resetTimer()
                 # 每5把修一次装备，首次也会维修
                 if self.count % REPAIR_TIMES == 1:
                     self.fixAction.start()
@@ -292,7 +296,8 @@ class GameAction:
                     self.room_num = 0
                     self.last_room_num = 0
                     self.hasKillSZT = False
-                    self.timeOut = 0
+                    self.blockerAction.resetTimer()
+                    self.blockerAction.resetRoomTimer()
                     self.againAction.stop()
                     hero_track = deque()
                     hero_track.appendleft([0,0])
@@ -341,7 +346,8 @@ class GameAction:
                     hero_track.appendleft([1-last_room_pos[0],1-last_room_pos[1]])
                     last_angle = 0
                     self.ctrl.reset()
-                    self.timeOut = 0
+                    self.blockerAction.resetRoomTimer()
+                    self.blockerAction.resetTimer()
                     time.sleep(0.5)
                 continue
             
@@ -367,27 +373,17 @@ class GameAction:
             angle = 0
             outprint = ''
             self.calculate_hero_pos(hero_track,hero)#计算英雄位置
-            # 计算操作是否超时(已经结束关卡不计时)
-            if self.timeOut == 0 or self.isFinish:
-                waitTime = 0
-            else:
-                waitTime = int((time.time() - self.timeOut) * 1000) 
+            # 特殊动作检测
             if self.control_attack.special_action(self.last_room_num, self.room_num):
                 print('执行特殊动作')
                 continue
-            # 超时补救措施
-            if waitTime > 5000:
-                outprint = '卡位补救措施'
-                random_angle = random.randint(0, 360)
-                print('\n检测到卡位,尝试脱离卡位,角度:',random_angle, end='\n')
-                self.ctrl.attack(False) 
-                self.ctrl.move(random_angle)
-                time.sleep(1)
-                self.timeOut = 0
-            elif len(monster)>0:
+            # 超时补救措施,计算操作是否超时(已经结束关卡不计时)
+            if self.blockerAction.actionCheckBlock():
+                continue
+            if len(monster)>0:
                 outprint = '有怪物'
                 angle = self.control_attack.control(hero_track[0],image,boxs,self.room_num)
-                self.timeOut = 0
+                self.blockerAction.updatTimerWhenRoomTimeOut()
             elif len(equipment)>0:
                 outprint = '有材料'
                 if len(gate)>0:
@@ -399,8 +395,7 @@ class GameAction:
                     angle = calculate_point_to_box_angle(hero_track[0],close_item)
                 self.ctrl.attack(False)
                 self.ctrl.move(angle)
-                if self.timeOut == 0:
-                    self.timeOut = time.time()
+                self.blockerAction.updatTimerWhenRoomTimeOut()
             elif len(gate)>0:
                 outprint = '有门'
                 if direction == 9:#左门
@@ -413,29 +408,18 @@ class GameAction:
                     angle = calculate_point_to_box_angle(hero_track[0],close_gate)
                     self.ctrl.attack(False)
                     self.ctrl.move(angle)
-                if self.timeOut == 0:
-                    self.timeOut = time.time()
+                self.blockerAction.updatTimer()
             elif len(arrow)>0 and self.room_num != 4:
                 outprint = '有箭头'
                 close_arrow,distance = find_closest_or_second_closest_box(arrow,hero_track[0])
                 angle = calculate_point_to_box_angle(hero_track[0],close_arrow)
                 self.ctrl.move(angle)
                 self.ctrl.attack(False)
-                if self.timeOut == 0:
-                    self.timeOut = time.time()
+                self.blockerAction.updatTimer()
             elif self.isFinish:
                 print("\n准备检测再次挑战")
                 self.ctrl.move(0)
                 self.againAction.start()
-            # elif self.actionStatus == ActionStatus.GOHOME:
-            #     print("\n返回城镇")
-            #     self.ctrl.move(0)
-            #     time.sleep(1)
-            #     # adb.device().click(*GOHOME)
-            #     time.sleep(1)
-            #     # adb.device().click(*GOHOME)
-            #     self.room_num = 0
-            #     self.last_room_num = 0
             else :
                 outprint = "无目标"
                 if self.room_num == 4:
@@ -444,13 +428,9 @@ class GameAction:
                     angle = calculate_angle_to_box(hero_track[0],[0.5,0.75])
                 self.ctrl.move(angle)
                 self.ctrl.attack(False) 
-            waitStr = waitTime = f"{waitTime} ms" if waitTime <=5000 else "超时"
-            if time == 0:
-                print("\r", end='')
-                print(f"\r当前进度:{outprint},角度{int(angle):04d}，位置{hero_track[0]}", end="")
-            else:
-                print("\r", end='')
-                print(f"\r当前进度:{outprint},角度{int(angle):04d}，位置{hero_track[0]}，行动时间:{waitStr} ", end="")
+            waitTime = self.blockerAction.getWaitTime()
+            print("\r", end='')
+            print(f"\r当前进度:{outprint},角度{int(angle):04d}，位置{hero_track[0]}，行动时间:{waitTime} ", end="")
     def calculate_hero_pos(self,hero_track,boxs):
         if len(boxs)==0:
             None
