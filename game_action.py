@@ -11,12 +11,14 @@ from utils.BWJRoomHelperV2 import Direction, roomHelper
 from action.GoToWorkAction import GoToWorkAction
 from action.FixAction import FixAction
 from action.ChangeHeroAction import ChangeHeroAction
-from action.DialogAction import DialogAction
+from action.AdvertAction import AdvertAction
 from action.AgainAction import AgainAction
 from action.ActionManager import actionManager
+import utils.RuntimeData as R
 import random
 import utils.MatchHelper as MatchHelper
-from config import AGAIN,GOHOME,REPAIR_TIMES
+from hero.hero import Hero
+from config import REPAIR_TIMES, WORKERS
 
 
 
@@ -180,14 +182,7 @@ from hero.guiqi import Guiqi
 from hero.jianhun import Jianhun
 class GameAction:
     def __init__(self, ctrl: GameControl,queue):
-        self.checkHero = "鬼泣"
-        # ---------- 英雄配置：
-        if self.checkHero == "奶妈":
-            self.control_attack = Naima(ctrl)
-        if self.checkHero == "鬼泣":
-            self.control_attack = Guiqi(ctrl)
-        if self.checkHero == "剑魂":
-            self.control_attack = Jianhun(ctrl)
+        self.control_attack = None
         self.queue = queue
         self.ctrl = ctrl
         self.againRetryCount = 0
@@ -210,9 +205,8 @@ class GameAction:
         self.fixAction = FixAction(self.ctrl, self.matchResultMap)
         self.changeHeroAction = ChangeHeroAction(self.ctrl, self.matchResultMap)
         self.againAction = AgainAction(self.ctrl, self.matchResultMap)
-        self.goToWorkAction.setAction(self.changeHeroAction)
-        self.changeHeroAction.setAction(self.goToWorkAction)
-        actionManager.init(self.goToWorkAction, self.changeHeroAction, self.fixAction, self.againAction)
+        self.advertAction = AdvertAction(self.ctrl, self.matchResultMap)
+        actionManager.init(self.goToWorkAction, self.changeHeroAction, self.fixAction, self.againAction, self.advertAction)
     def quit(self):
         self.thread_run = True
     def reset(self):
@@ -230,6 +224,7 @@ class GameAction:
         self.fixAction.stop()
         self.changeHeroAction.stop()
         self.againAction.stop()
+        self.advertAction.stop()
         self.thread.start()
     def convertDirection(self, dNum:int):
         if dNum == 8:
@@ -240,6 +235,12 @@ class GameAction:
             return Direction.RIGHT
         elif dNum == 11:
             return Direction.TOP
+    def checkHero(self):
+        if R.CURRENT_HERO in WORKERS:
+            job = WORKERS[R.CURRENT_HERO]
+        else:
+            job = "奶妈" #默认奶妈
+        self.control_attack = Hero.getInstance(job, self.ctrl)
     def control(self):
         last_room_pos = []
         hero_track = deque()
@@ -254,11 +255,15 @@ class GameAction:
             if self.queue.empty():
                 time.sleep(0.001)
                 continue
+            # 先设置职业配置
+            self.checkHero()
             image,boxs = self.queue.get()
             
+            if self.changeHeroAction.actionChangeHero(image):
+                continue
             if self.goToWorkAction.actionWayToBWJ(image):
                 continue
-            if self.changeHeroAction.actionChangeHero(image):
+            if self.advertAction.actionCloseAdvert(image):
                 continue
             if self.fixAction.actionFix(image):
                 continue
@@ -394,7 +399,8 @@ class GameAction:
                     angle = calculate_point_to_box_angle(hero_track[0],close_item)
                 self.ctrl.attack(False)
                 self.ctrl.move(angle)
-                self.timeOut = 0
+                if self.timeOut == 0:
+                    self.timeOut = time.time()
             elif len(gate)>0:
                 outprint = '有门'
                 if direction == 9:#左门

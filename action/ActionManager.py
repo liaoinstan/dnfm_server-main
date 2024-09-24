@@ -1,10 +1,6 @@
 from abc import abstractmethod
 from game_control import GameControl
 import utils.MatchHelper as MatchHelper
-from action.GoToWorkAction import GoToWorkAction
-from action.FixAction import FixAction
-from action.ChangeHeroAction import ChangeHeroAction
-from action.AgainAction import AgainAction
 import utils.RuntimeData as R
 
 
@@ -20,22 +16,24 @@ class ActionManager:
     '''
 
     def __init__(self):
-        self.goToWorkAction: GoToWorkAction
-        self.changeHeroAction: ChangeHeroAction
-        self.fixAction: FixAction
-        self.againAction: AgainAction
+        self.goToWorkAction = None
+        self.changeHeroAction = None
+        self.fixAction = None
+        self.againAction = None
+        self.advertAction = None
         self.image = None
 
-    def init(self, goToWorkAction: GoToWorkAction, changeHeroAction: ChangeHeroAction, fixAction: FixAction, againAction: AgainAction):
+    def init(self, goToWorkAction, changeHeroAction, fixAction, againAction, advertAction):
         self.goToWorkAction = goToWorkAction
         self.changeHeroAction = changeHeroAction
         self.fixAction = fixAction
         self.againAction = againAction
+        self.advertAction = advertAction
 
     def start(self):
         if MatchHelper.match_template(self.image, 'way_to_bwj/wt.jpg'):
             # 副本外
-            if R.CURRENT_HERO:
+            if R.CURRENT_HERO and not R.HEROS[R.CURRENT_HERO-1]:
                 print("当前角色:", R.CURRENT_HERO, "开始刷图")
                 self.goToWorkAction.start()
             else:
@@ -58,13 +56,12 @@ class ActionManager:
             self.goToWorkAction.stop()
             self.changeHeroAction.stop()
             return
-        
+
     def stopAllAction(self):
         self.goToWorkAction.stop()
         self.changeHeroAction.stop()
         self.fixAction.stop()
         self.dialogAction.stop()
-        
 
 
 actionManager = ActionManager()

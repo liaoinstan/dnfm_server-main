@@ -11,6 +11,7 @@ class FixAction(BaseAction):
 
     class Path(Enum):
         BACKPACK = 'fix/fix_backpack.jpg'
+        BACKPACK_OVER = 'fix/fix_backpack_over.jpg'
         FIX_IRON_FELT = 'fix/fix_iron_felt.jpg'
         FIX_BTN_XL = 'fix/fix_btn_xl.jpg'
         FIX_CLOSE = 'fix/fix_close.jpg'
@@ -46,6 +47,12 @@ class FixAction(BaseAction):
                 self.click(resultBackpack)
                 time.sleep(random.uniform(0.8, 1.2))
                 self.step = 1
+            else:
+                resultBackpackOver = self.match(image, FixAction.Path.BACKPACK_OVER.value)
+                if resultBackpackOver:
+                    self.click(resultBackpackOver)
+                    time.sleep(random.uniform(0.8, 1.2))
+                    self.step = 1
             time.sleep(0.3)
         elif self.step == 1:
             resultIronFelt = self.match(image, FixAction.Path.FIX_IRON_FELT.value)

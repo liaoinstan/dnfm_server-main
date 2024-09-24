@@ -5,6 +5,34 @@ from typing import List
 
 
 class Hero:
+    
+    INSTANCE_MAP = {}
+    
+    @staticmethod
+    def getInstance(heroJob: str, ctrl):
+        if heroJob in Hero.INSTANCE_MAP:
+            return Hero.INSTANCE_MAP[heroJob]
+        else:
+            print(f"初始化职业配置：{heroJob}{('(默认)'if heroJob == '奶妈' else '')}")
+            if heroJob == "奶妈":
+                from hero.naima import Naima
+                hero = Naima(ctrl)
+            elif heroJob == "鬼泣":
+                from hero.guiqi import Guiqi
+                hero = Guiqi(ctrl)
+            elif heroJob == "剑魂":
+                from hero.jianhun import Jianhun
+                hero = Jianhun(ctrl)
+            else:
+                hero = None
+            if hero:
+                Hero.INSTANCE_MAP[heroJob] = hero
+                return hero
+            else:
+                print("职业配置错误，使用默认奶奶配置")
+                return Naima(ctrl)
+        
+    
     def __init__(self, ctrl):
         self.ctrl = ctrl
         self.pre_room_num = -1

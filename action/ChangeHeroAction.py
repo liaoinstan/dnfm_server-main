@@ -5,7 +5,7 @@ import time
 from action.BaseAction import BaseAction
 from enum import Enum
 import utils.RuntimeData as R
-import numpy as np
+from action.ActionManager import actionManager
 
 
 class ChangeHeroAction(BaseAction):
@@ -25,12 +25,8 @@ class ChangeHeroAction(BaseAction):
         self.runing = False
         self.step = 0
         self.checkTagsCount = -1
-        self.goToWorkAction = None
-        
-    def setAction(self, goToWorkAction):
-        self.goToWorkAction = goToWorkAction
 
-    def start(self, step = 0):
+    def start(self, step=0):
         self.reset()
         self.step = step
         self.runing = True
@@ -98,11 +94,12 @@ class ChangeHeroAction(BaseAction):
         elif self.step == 3:
             resultStart = self.match(image, ChangeHeroAction.Path.HERO_START.value)
             if resultStart:
+                print("已选择英雄，点击开始")
                 self.click(resultStart)
                 time.sleep(random.uniform(3, 4))
                 self.stop()
-                # 切换英雄完成，开始上班
-                self.goToWorkAction.start()
+                # 切换英雄完成，检查页面活动广告
+                actionManager.advertAction.start()
 
         return True
 
@@ -122,7 +119,7 @@ class ChangeHeroAction(BaseAction):
             for hero in R.HEROS:
                 if hasFinish(hero, width):
                     R.HEROS[hero] = True
-                    
+
     def __nextHero(self):
         for hero, finish in R.HEROS.items():
             if not finish:

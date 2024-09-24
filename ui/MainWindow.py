@@ -12,7 +12,7 @@ from game_action import GameAction
 import utils.RuntimeData as R
 from scrcpy_adb import ScrcpyADB
 from action.ActionManager import actionManager
-from config import SHOW_MAP_POINT, SHOW_BUTTON, ALPHA, WINDOW_SCALE
+from config import SHOW_MAP_POINT, SHOW_BUTTON, ALPHA, WINDOW_SCALE, WORKERS
 
 version = "1.1.0A"
 
@@ -31,7 +31,6 @@ class MainWindow(QWidget):
         self.mouseTrack = []
         self.rightBarWidth = toDp(120)
         self.hSpace = toDp(3)
-        self.heroStr = "1,2,3"
         self.initUI()
 
     def initUI(self):
@@ -191,15 +190,15 @@ class MainWindow(QWidget):
         return pix.scaled(width, height, Qt.KeepAspectRatio)
 
     def __createHeroList(self):
-        if self.heroStr is not None and len(self.heroStr) > 0:
-            R.HEROS = {int(x): False for x in self.heroStr.split(",")}
+        # if self.heroStr is not None and len(self.heroStr) > 0:
+            # R.HEROS = {int(x): False for x in self.heroStr.split(",")}
+        for heroNum in WORKERS:
+            R.HEROS[heroNum] = False
 
     def onclick(self):
         if self.sender() is self.startBtn:
             if self.startBtn.text() == "start":
                 self.startBtn.setText("stop")
-                # self.action.isFinish = True
-                R.CURRENT_HERO = 2
                 self.action.stop_event = False
                 self.__createHeroList()
                 actionManager.start()
