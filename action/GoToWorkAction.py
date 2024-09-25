@@ -19,6 +19,8 @@ class GoToWorkAction(BaseAction):
         SELECT_BWJ = 'way_to_bwj/select_bwj.jpg'
         SELECT_START = 'way_to_bwj/select_start.jpg'
         LOADING = 'way_to_bwj/loading.jpg'
+        NOT_SHOW = 'dialog/dialog_not_show.jpg'
+        YES = 'dialog/dialog_yes.jpg'
 
     def getPathEnum(self):
         return GoToWorkAction.Path
@@ -102,6 +104,24 @@ class GoToWorkAction(BaseAction):
                 self.step = 4
             time.sleep(0.3)
         elif self.step == 4:
+            resultLoading = self.match(image, GoToWorkAction.Path.LOADING.value, showRect=False)
+            if resultLoading:
+                print("加载中...")
+                self.stop()
+            else:
+                resultYes = self.match(image, GoToWorkAction.Path.YES.value)
+                if resultYes:
+                    print("检测到弹窗，关闭")
+                    time.sleep(random.uniform(0.8, 1.2))
+                    resultCheckBox = self.match(image, GoToWorkAction.Path.NOT_SHOW.value)
+                    if resultCheckBox:
+                        time.sleep(random.uniform(0.8, 1.2))
+                        self.click(resultCheckBox)
+                    time.sleep(random.uniform(0.8, 1.2))
+                    self.click(resultYes)
+                    self.step = 5
+                time.sleep(0.1)
+        elif self.step == 5:
             resultLoading = self.match(image, GoToWorkAction.Path.LOADING.value, showRect=False)
             if resultLoading:
                 print("加载中...")

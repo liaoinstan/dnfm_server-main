@@ -1,6 +1,7 @@
 import time
 import math
 from abc import abstractmethod
+from game_control import GameControl
 from typing import List
 
 
@@ -35,7 +36,7 @@ class Hero:
         
     
     def __init__(self, ctrl):
-        self.ctrl = ctrl
+        self.ctrl:GameControl = ctrl
         self.pre_room_num = -1
         self.last_angle = 0
         self.last_auto_skill_time = 0
@@ -178,3 +179,28 @@ class Hero:
             self.ctrl.attack(False)
         self.last_angle = angle
         return angle
+    
+    #################################################################################
+    # 特殊动作
+    # 默认特殊动作
+    #################################################################################
+    def special_action(self, last_room_num, room_num):
+        if self.pre_room_num == room_num:
+            return False
+        if last_room_num == 5 and room_num == 6:
+            self.ctrl.move(1)
+            time.sleep(0.3)
+            self.skill("后跳", prefix="特殊动作")
+            time.sleep(0.1)
+            self.skill("后跳", prefix="特殊动作")
+            time.sleep(0.1)
+            self.ctrl.move(1)
+            time.sleep(0.3)
+            self.skill("后跳", prefix="特殊动作")
+            time.sleep(0.1)
+            self.skill("后跳", prefix="特殊动作")
+            time.sleep(0.1)
+            self.pre_room_num = room_num
+            return True
+        else:
+            return False

@@ -33,7 +33,7 @@ class ActionManager:
     def start(self):
         if MatchHelper.match_template(self.image, 'way_to_bwj/wt.jpg'):
             # 副本外
-            if R.CURRENT_HERO and not R.HEROS[R.CURRENT_HERO-1]:
+            if R.CURRENT_HERO and not R.HEROS[R.CURRENT_HERO]:
                 print("当前角色:", R.CURRENT_HERO, "开始刷图")
                 self.goToWorkAction.start()
             else:
