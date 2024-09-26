@@ -205,9 +205,7 @@ class MainWindow(QWidget):
             else:
                 self.startBtn.setText("start")
                 self.action.stop_event = True
-                self.action.goToWorkAction.stop()
-                self.action.fixAction.stop()
-                self.action.changeHeroAction.stop()
+                actionManager.stopAllAction()
         elif self.sender() is self.resetBtn:
             self.action.reset()
         elif self.sender() is self.screenshotBtn:

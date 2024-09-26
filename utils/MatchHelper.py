@@ -17,7 +17,6 @@ def __resize_template(large_image, template_image):
     caculRate = caculRate*TUNING_MATCH
     return cv2.resize(template_image, (int(template_image.shape[1]*caculRate), int(template_image.shape[0]*caculRate)))
 
-
 def match_template(large_image, template_image_path, threshold=0.7):
     # 读取大图和模板图
     template_image = cv2.imread(f'template/{template_image_path}')

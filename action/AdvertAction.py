@@ -20,6 +20,7 @@ class AdvertAction(BaseAction):
     def __init__(self, ctrl, matchResultMap: dict):
         super().__init__(ctrl, matchResultMap)
         self.runing = False
+        self.count = 0
 
     def start(self):
         self.runing = True
@@ -35,13 +36,16 @@ class AdvertAction(BaseAction):
         resultClose1 = self.match(image, AdvertAction.Path.CLOSE1.value)
         resultWt = self.match(image, AdvertAction.Path.WT.value)
         if resultWt and not resultClose1:
-            self.stop()
-            print("活动广告清除完毕")
-            # 活动广告清除完毕，开始上班
-            actionManager.goToWorkAction.start()
+            self.count += 1
+            if self.count == 3:
+                self.stop()
+                print("活动广告清除完毕")
+                # 活动广告清除完毕，开始上班
+                actionManager.goToWorkAction.start()
             
         if resultClose1:
             print("检测到活动广告弹窗，关闭。")
+            self.count = 0
             self.click(resultClose1)
             time.sleep(random.uniform(0.8, 1.2))
 

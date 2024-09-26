@@ -158,12 +158,14 @@ class Hero:
             monster, hero_pos)
         close_monster_point = self.calculate_center(close_monster)
         angle = self.calculate_point_to_box_angle(hero_pos, close_monster)
+        distance_x = abs(hero_pos[0]-close_monster_point[0])
+        distance_y = abs(hero_pos[1]-close_monster_point[1])
         if not self.are_angles_on_same_side_of_y(self.last_angle, angle):
             self.ctrl.move(angle)
             self.ctrl.attack(False)
             time.sleep(0.1)
             self.ctrl.attack()
-        elif abs(hero_pos[1]-close_monster_point[1]) < 0.1 and abs(hero_pos[0]-close_monster_point[0]) < 0.25:
+        elif distance_y < 0.1 and distance_x < 0.25:
             timeGap = int((time.time() - self.last_auto_skill_time) * 1000)
             if timeGap > 2500:
                 skills = self.get_auto_skill()
@@ -175,8 +177,15 @@ class Hero:
             else:
                 self.ctrl.attack()
         else:
-            self.ctrl.move(angle)
-            self.ctrl.attack(False)
+            distance = math.sqrt(distance_x**2 + distance_y**2)
+            if distance>0.3:
+                self.ctrl.move(angle)
+                self.ctrl.attack(False)
+            else:
+                self.ctrl.move(angle)
+                self.ctrl.attack(False)
+                time.sleep(distance*2)
+                self.ctrl.attack(True)
         self.last_angle = angle
         return angle
     
