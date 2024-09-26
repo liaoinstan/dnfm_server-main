@@ -3,15 +3,15 @@ import sys
 from PyQt5.QtCore import Qt, QTimer, QPoint
 from PyQt5.QtGui import QImage, QPixmap, QMouseEvent, QPainter, QPen
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QHBoxLayout, QPushButton, QVBoxLayout, QStackedLayout, QSizePolicy, QCheckBox, QSlider, QFrame, QDesktopWidget
-from ui.SizeHelper import toDp
+from component.ui.SizeHelper import toDp
 import cv2
-from utils.yolov5_onnx import YOLOv5
-from utils.BWJRoomHelperV2 import roomHelper
-from utils.ButtonHelper import buttonHelper
-from game_action import GameAction
-import utils.RuntimeData as R
-from scrcpy_adb import ScrcpyADB
-from action.ActionManager import actionManager
+from component.utils.yolov5_onnx import YOLOv5
+from component.utils.BWJRoomHelperV2 import roomHelper
+from component.utils.ButtonHelper import buttonHelper
+from component.action.game_action import GameAction
+import component.utils.RuntimeData as R
+from component.adb.scrcpy_adb import ScrcpyADB
+from component.action.ActionManager import actionManager
 from config import SHOW_MAP_POINT, SHOW_BUTTON, ALPHA, WINDOW_SCALE, WORKERS
 
 version = "1.1.0A"

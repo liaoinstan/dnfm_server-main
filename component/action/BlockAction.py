@@ -2,11 +2,11 @@
 
 import random
 import time
-from game_control import GameControl
-from action.BaseAction import BaseAction
+from component.adb.game_control import GameControl
+from component.action.BaseAction import BaseAction
 from enum import Enum
 from config import CENTER_POINT
-from action.ActionManager import actionManager
+from component.action.ActionManager import actionManager
 
 
 class BlockAction:

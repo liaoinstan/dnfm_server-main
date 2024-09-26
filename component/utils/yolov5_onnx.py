@@ -6,7 +6,7 @@ from PIL import Image,ImageOps
 import threading
 import time
 import onnxruntime as ort
-from action.ActionManager import actionManager
+from component.action.ActionManager import actionManager
 def resize_img( im):
     target_size = 640   # 目标尺寸
     width, height = im.size

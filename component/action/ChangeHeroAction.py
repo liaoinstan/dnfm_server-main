@@ -1,11 +1,11 @@
 
-import utils.MatchHelper as MatchHelper
+import component.utils.MatchHelper as MatchHelper
 import random
 import time
-from action.BaseAction import BaseAction
+from component.action.BaseAction import BaseAction
 from enum import Enum
-import utils.RuntimeData as R
-from action.ActionManager import actionManager
+import component.utils.RuntimeData as R
+from component.action.ActionManager import actionManager
 
 
 class ChangeHeroAction(BaseAction):

@@ -2,10 +2,10 @@
 
 import random
 import time
-from action.BaseAction import BaseAction
+from component.action.BaseAction import BaseAction
 from enum import Enum
 from config import CENTER_POINT
-from action.ActionManager import actionManager
+from component.action.ActionManager import actionManager
 
 
 class AdvertAction(BaseAction):

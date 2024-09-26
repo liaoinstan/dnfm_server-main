@@ -1,7 +1,7 @@
 from abc import abstractmethod
-from game_control import GameControl
-import utils.MatchHelper as MatchHelper
-import utils.RuntimeData as R
+from component.adb.game_control import GameControl
+import component.utils.MatchHelper as MatchHelper
+import component.utils.RuntimeData as R
 
 
 class ActionManager:

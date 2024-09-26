@@ -1,7 +1,7 @@
 import time
 from typing import Tuple
 import json
-from scrcpy_adb import ScrcpyADB
+from component.adb.scrcpy_adb import ScrcpyADB
 import math
 import random
 from config import JITTER

@@ -3,10 +3,9 @@ import math
 import cv2
 import numpy as np
 from collections import OrderedDict,deque
-from PIL import Image, ImageDraw
 from enum import Enum
 from config import CENTER_POINT, OFFSET_ROOM
-import utils.RuntimeData as R
+import component.utils.RuntimeData as R
 
 ########################################################
 #   只能在布万加副本内使用，目前只支持走布万加下路
@@ -41,7 +40,7 @@ class Direction(Enum):
 
 class BWJRoomHelper(object):
     def __init__(self):
-        self.center: tuple
+        self.center: tuple = None
         self.offsetRoom: int
         self.offsetArrow: int
         self.img = None

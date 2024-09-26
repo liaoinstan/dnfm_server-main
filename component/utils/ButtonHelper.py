@@ -1,6 +1,6 @@
 import cv2
 from config import JITTER
-import utils.RuntimeData as R
+import component.utils.RuntimeData as R
 
 class ButtonHelper(object):
     def __init__(self):

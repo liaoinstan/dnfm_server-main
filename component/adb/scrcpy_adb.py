@@ -7,8 +7,8 @@ import scrcpy
 from config import FRAME_WIDTH
 import subprocess
 import re
-from utils.BWJRoomHelperV2 import roomHelper
-import utils.RuntimeData as R
+from component.utils.BWJRoomHelperV2 import roomHelper
+import component.utils.RuntimeData as R
 import os
 import threading
 

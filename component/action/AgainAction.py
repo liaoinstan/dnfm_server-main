@@ -2,11 +2,11 @@
 
 import random
 import time
-from action.BaseAction import BaseAction
+from component.action.BaseAction import BaseAction
 from enum import Enum
 from config import CENTER_POINT
-import utils.RuntimeData as R
-from action.ActionManager import actionManager
+import component.utils.RuntimeData as R
+from component.action.ActionManager import actionManager
 
 
 class AgainAction(BaseAction):

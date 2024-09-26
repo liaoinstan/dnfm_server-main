@@ -1,8 +1,6 @@
 from abc import abstractmethod
-from game_control import GameControl
-import utils.MatchHelper as MatchHelper
-import datetime
-import cv2
+from component.adb.game_control import GameControl
+import component.utils.MatchHelper as MatchHelper
 
 
 class BaseAction:

@@ -1,7 +1,7 @@
 import time
 import math
 from abc import abstractmethod
-from game_control import GameControl
+from component.adb.game_control import GameControl
 from typing import List
 
 

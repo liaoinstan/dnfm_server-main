@@ -1,4 +1,4 @@
-from game_control import GameControl
+from component.adb.game_control import GameControl
 import time
 import cv2
 import math
@@ -7,17 +7,16 @@ from enum import Enum
 from collections import deque
 import threading
 from adbutils import adb
-from utils.BWJRoomHelperV2 import Direction, roomHelper
-from action.GoToWorkAction import GoToWorkAction
-from action.FixAction import FixAction
-from action.ChangeHeroAction import ChangeHeroAction
-from action.AdvertAction import AdvertAction
-from action.AgainAction import AgainAction
-from action.BlockAction import BlockAction
-from action.ActionManager import actionManager
-import utils.RuntimeData as R
-import random
-import utils.MatchHelper as MatchHelper
+from component.utils.BWJRoomHelperV2 import Direction, roomHelper
+from component.action.GoToWorkAction import GoToWorkAction
+from component.action.FixAction import FixAction
+from component.action.ChangeHeroAction import ChangeHeroAction
+from component.action.AdvertAction import AdvertAction
+from component.action.AgainAction import AgainAction
+from component.action.BlockAction import BlockAction
+from component.action.ActionManager import actionManager
+import component.utils.RuntimeData as R
+import component.utils.MatchHelper as MatchHelper
 from hero.hero import Hero
 from config import REPAIR_TIMES, WORKERS
 

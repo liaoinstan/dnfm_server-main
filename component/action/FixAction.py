@@ -1,8 +1,6 @@
-
-
 import random
 import time
-from action.BaseAction import BaseAction
+from component.action.BaseAction import BaseAction
 from enum import Enum
 from config import CENTER_POINT
 

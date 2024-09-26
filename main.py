@@ -1,10 +1,10 @@
-from utils.yolov5_onnx import YOLOv5
-from scrcpy_adb import ScrcpyADB
-from game_control import GameControl
-from game_action import GameAction
+from component.utils.yolov5_onnx import YOLOv5
+from component.adb.scrcpy_adb import ScrcpyADB
+from component.adb.game_control import GameControl
+from component.action.game_action import GameAction
 import queue
 import os
-from ui.MainWindow import MainWindow
+from component.ui.MainWindow import MainWindow
 from PyQt5.QtWidgets import QApplication
 import sys
 
@@ -19,7 +19,7 @@ class AutoCleaningQueue(queue.Queue):
 if __name__ == '__main__':
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    pathOnnx = os.path.join(current_dir, "./utils/dnfm.onnx")
+    pathOnnx = os.path.join(current_dir, "./component/utils/dnfm.onnx")
     pathButtonsJson = os.path.join(current_dir, "./buttons.json")
     image_queue = AutoCleaningQueue(maxsize=3)
     infer_queue = AutoCleaningQueue(maxsize=3)
