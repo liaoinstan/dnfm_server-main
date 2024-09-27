@@ -5,7 +5,6 @@ import time
 import datetime
 import scrcpy
 from config import FRAME_WIDTH
-import subprocess
 import re
 from component.utils.BWJRoomHelperV2 import roomHelper
 import component.utils.RuntimeData as R
@@ -52,18 +51,17 @@ class ScrcpyADB:
         self.onConnect()
         print(devices, client)
         # 发送adb命令获取物理屏幕分辨率
-        process = subprocess.Popen("adb shell wm size", shell=True, stdout=subprocess.PIPE)
-        output, error = process.communicate()
+        output = client.device.shell("wm size")
         if output:
             # 正则解析返回结果
-            print("手机分辨率", output.decode())
-            result = re.search(r'(\d+)x(\d+)', output.decode())
+            print("手机分辨率", output)
+            result = re.search(r'(\d+)x(\d+)', output)
             # 初始化
             R.setDeviceResolution(int(result.group(2)), int(result.group(1)))
             R.log()
             roomHelper.init()
-        if error:
-            print("设备异常:", error.decode())
+        else:
+            print("设备异常，请检查设备连接状态")
             return
         # 添加数据流回调
         client.add_listener(scrcpy.EVENT_FRAME, self.on_frame)
@@ -77,6 +75,8 @@ class ScrcpyADB:
     def stop(self):
         if self.client:
             self.client.stop()
+        if self.connectThread:
+            self.connectThread.stop()
 
     def convetPoint(self, x, y):
         return x*R.SCALE, y*R.SCALE

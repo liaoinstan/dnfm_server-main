@@ -4,8 +4,8 @@ import component.utils.MatchHelper as MatchHelper
 
 
 class BaseAction:
-    
     '''
+    Action 的基类，为子类提供公共方法和成员变量
     matchResultMap
     {
         "fix/fix_btn_xl.jpg" : [(cx,cy,w,h),(cx,cy,w,h)]
@@ -26,23 +26,18 @@ class BaseAction:
             self.updateMatchResultMap({path: [result]})
         else:
             self.updateMatchResultMap({})
-            
-        # if path == 'way_to_bwj/loading.jpg':
-        #     currentTime = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')[:-3]
-        #     fileName = f'screenshot_{currentTime}.jpg'
-        #     print(fileName, result)
-        #     cv2.imwrite(f'screenshort/{fileName}',image)
         return result
 
     def click(self, result):
+        '''
+        点击一个匹配结果对应的区域中心位置
+        '''
         self.ctrl.click(result[0], result[1], convert=False)
         
     def updateMatchResultMap(self, resultMap: dict):
-        # for key,value in resultMap.items():
-        #     if value is None:
-        #         self.matchResultMap.pop(key, None)
-        #     else:
-        #         self.matchResultMap[key] = value
+        '''
+        把匹配结果显示到屏幕上
+        '''
         for enumName, enum in self.getPathEnum().__members__.items():
             if enum.value in resultMap and resultMap[enum.value] is not None:
                 self.matchResultMap[enum.value] = resultMap[enum.value]
@@ -50,4 +45,7 @@ class BaseAction:
                 self.matchResultMap.pop(enum.value, None)
                 
     def removeAllResults(self):
+        '''
+        从屏幕上异常所有匹配结果
+        '''
         self.updateMatchResultMap({})

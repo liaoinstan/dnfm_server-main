@@ -1,0 +1,55 @@
+
+
+###########################################################################################################################
+# 
+# 模块版本号可以自行调整，没需求直接装最新版就可以了，这里写的版本是开发过程中使用的版本
+# 
+# UI框架
+PyQt5==5.15.11
+# 投屏框架
+scrcpy-client==0.4.7
+# torch，脚本使用了torch的张量运算库，所以需要安装torch
+# 只需安装CPU版本即可，不使用其推理功能，后期可以优化使用numpy算法代替torch，去掉对该库的依赖
+torch==2.4.1
+torchvision==0.19.1
+# 推理框架
+onnxruntime==1.19.0
+# 
+###########################################################################################################################
+
+
+
+###########################################################################################################################
+# 
+#       ★关于GPU推理★
+# 
+# 目前代码支持onnxruntime使用GPU进行推理，环境需要自行配置
+# 使用GPU推理需要做3件事，1.安装GPU版onnxruntime，2.安装CUDA-toolkit，3.安装CuDNN
+# onnxruntime-gpu，CUDA-toolkit，CuDNN三者的版本需要严格匹配，不使用指定版本可能出现无法运行推理效率低等情况，提前确定要装的版本
+# 版本对应关系见：https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirements
+# 应该首先根据自己的显卡型号确定支持的CUDA-toolkit的版本，再根据CUDA-toolkit去查寻符合条件的onnxruntime-gpu和CuDNN的版本
+# 我本机的版本对应如下供参考：
+# 显卡:RTX4070    onnxruntime-gpu:v1.18.0     CUDA-toolkit:v12.4.1    CuDNN:v8.9.7
+# 
+# 
+# 
+# 1.安装GPU版onnxruntime：
+# 如果你已经安装CPU版请先卸载：
+# pip uninstall onnxruntime
+# pip install onnxruntime-gpu==your version
+# 安装详情见：https://onnxruntime.ai/docs/install/#python-installs
+# 
+# 2.安装CUDA-toolkit
+# 查询自己的显卡型号和驱动版本下载对应的CUDA-toolkit版本（查询方法网上可以搜到）
+# 下载地址：https://developer.nvidia.com/cuda-toolkit-archive  双击exe直接安装
+# 
+# 3.安装CuDNN
+# 根据版本对应关系，下载对应版本CuDNN
+# 下载地址：https://developer.nvidia.com/cudnn-archive
+# CuDNN安装方法：
+# https://docs.nvidia.com/deeplearning/cudnn/archives/cudnn-890/install-guide/index.html
+# 
+# 以上步骤细节均可参照官方文档配置，全部配置完成后，再次运行脚本就会使用GPU进行加速推理，无需修改任何代码
+# 安装过程中遇到问题自行百度或阅读文档，一般不会太顺利，解决办法网上都有
+# 
+###########################################################################################################################

@@ -31,6 +31,8 @@ class BlockAction:
             self.timeOutBlock = time.time()
             
     def updatTimerWhenRoomTimeOut(self):
+        if self.timeOutRoom == 0:
+            self.timeOutRoom = time.time()
         if self.__isRoomTimeOut():
             self.updatTimer()
 

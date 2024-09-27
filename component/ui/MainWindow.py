@@ -12,9 +12,7 @@ from component.action.game_action import GameAction
 import component.utils.RuntimeData as R
 from component.adb.scrcpy_adb import ScrcpyADB
 from component.action.ActionManager import actionManager
-from config import SHOW_MAP_POINT, SHOW_BUTTON, ALPHA, WINDOW_SCALE, WORKERS
-
-version = "1.1.0A"
+from config import SHOW_MAP_POINT, SHOW_BUTTON, ALPHA, WINDOW_SCALE, WORKERS, VERSION
 
 
 class MainWindow(QWidget):
@@ -34,7 +32,7 @@ class MainWindow(QWidget):
         self.initUI()
 
     def initUI(self):
-        self.setWindowTitle(f'DNFM v{version}')
+        self.setWindowTitle(f'DNFM v{VERSION}')
         self.setGeometry(100, 100, 100, 100)
         self.setWindowOpacity(0.75)
         self.setMinimumSize(100, 100)
@@ -191,7 +189,7 @@ class MainWindow(QWidget):
 
     def __createHeroList(self):
         # if self.heroStr is not None and len(self.heroStr) > 0:
-            # R.HEROS = {int(x): False for x in self.heroStr.split(",")}
+        # R.HEROS = {int(x): False for x in self.heroStr.split(",")}
         for heroNum in WORKERS:
             R.HEROS[heroNum] = False
 
