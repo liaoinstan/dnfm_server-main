@@ -2,12 +2,14 @@ import cv2
 import numpy as np
 import torch
 from torchvision.ops import nms
-from PIL import Image,ImageOps
+from PIL import Image, ImageOps
 import threading
 import time
 import onnxruntime as ort
 from component.action.ActionManager import actionManager
-def resize_img( im):
+
+
+def resize_img(im):
     target_size = 640   # 目标尺寸
     width, height = im.size
     if width < height:
@@ -19,7 +21,7 @@ def resize_img( im):
     resized_im = im.resize((new_width, new_height), Image.Resampling.LANCZOS)
     pad_width = target_size - new_width
     pad_height = target_size - new_height
-    
+
     # 计算每边需要补的像素数
     left_pad = pad_width // 2
     right_pad = pad_width - left_pad
@@ -28,11 +30,14 @@ def resize_img( im):
     # print(top_pad,top_pad)
     # 补hui色边
     new_im = ImageOps.expand(resized_im, border=(left_pad, top_pad, right_pad, bottom_pad), fill=(114, 114, 114))
-    
-    return new_im,top_pad
-def from_numpy( x):
+
+    return new_im, top_pad
+
+
+def from_numpy(x):
     """Converts a NumPy array to a torch tensor, maintaining device compatibility."""
     return torch.from_numpy(x) if isinstance(x, np.ndarray) else x
+
 
 def box_iou(box1, box2, eps=1e-7):
     # https://github.com/pytorch/vision/blob/master/torchvision/ops/boxes.py
@@ -54,6 +59,8 @@ def box_iou(box1, box2, eps=1e-7):
 
     # IoU = inter / (area1 + area2 - inter)
     return inter / ((a2 - a1).prod(2) + (b2 - b1).prod(2) - inter + eps)
+
+
 def xywh2xyxy(x):
     """Convert nx4 boxes from [x, y, w, h] to [x1, y1, x2, y2] where xy1=top-left, xy2=bottom-right."""
     y = x.clone() if isinstance(x, torch.Tensor) else np.copy(x)
@@ -62,12 +69,16 @@ def xywh2xyxy(x):
     y[..., 2] = x[..., 0] + x[..., 2] / 2  # bottom right x
     y[..., 3] = x[..., 1] + x[..., 3] / 2  # bottom right y
     return y
+
+
 def xyxy2xywh(x):
     """Convert nx4 boxes from [x, y, w, h] to [x1, y1, x2, y2] where xy1=top-left, xy2=bottom-right."""
     y = x.clone() if isinstance(x, torch.Tensor) else np.copy(x)
     y[..., 2] = x[..., 2] - x[..., 0] / 2  # bottom right x
     y[..., 3] = x[..., 3] - x[..., 1] / 2  # bottom right y
     return y
+
+
 def NonMaximumSuppression(
     prediction,
     conf_thres=0.15,
@@ -113,9 +124,9 @@ def NonMaximumSuppression(
 
     mi = 5 + nc  # mask start index
     output = [torch.zeros((0, 6 + nm), device=prediction.device)] * bs
-    
+
     # print("xxxx2 shape",prediction.shape) #[1, 25200, 19]
-    
+
     m_i = 0
     s = time.time()
     for xi, x in enumerate(prediction):  # image index, image inference
@@ -193,6 +204,8 @@ def NonMaximumSuppression(
     # print("xxxx2 output",len(output[0]))#9
     # print("xxxx2 output",len(output[0][0]))#6
     return output
+
+
 def non_max_suppression(
     prediction,
     conf_thres=0.4,
@@ -301,9 +314,11 @@ def non_max_suppression(
 
     return output
 
+
 class YOLOv5:
     label = ['Monster', 'Monster_ds', 'Monster_szt', 'card', 'equipment', 'go', 'hero', 'map', 'opendoor_d', 'opendoor_l', 'opendoor_r', 'opendoor_u', 'pet', 'Diamond']
-    def __init__(self, model_path,image_queue,infer_queue,onFrame):
+
+    def __init__(self, model_path, image_queue, infer_queue, onFrame):
         self.path = model_path
         self.onFrame = onFrame
         self.image_queue = image_queue
@@ -312,8 +327,9 @@ class YOLOv5:
         self.thread = threading.Thread(target=self.thread)  # 创建线程，并指定目标函数
         self.thread.daemon = True  # 设置为守护线程（可选）
         self.thread.start()
+
     def thread(self):
-        session = ort.InferenceSession(self.path,providers=['CUDAExecutionProvider','CPUExecutionProvider']) #使用GPU推理，需要Cuda环境，否则运行报错
+        session = ort.InferenceSession(self.path, providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])  # 使用GPU推理，需要Cuda环境，否则运行报错
         # session = ort.InferenceSession(self.path,providers=['CUDAExecutionProvider','CPUExecutionProvider'])
         # 获取模型输入输出信息
         input_name = session.get_inputs()[0].name
@@ -328,30 +344,31 @@ class YOLOv5:
                 time.sleep(0.005)
                 continue
             img = self.image_queue.get()
-            image = Image.fromarray(cv2.cvtColor(img,cv2.COLOR_BGR2RGB))
-            image,top_pad = resize_img(image)
+            image = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+            image, top_pad = resize_img(image)
             image_array = np.array(image).transpose((2, 0, 1))
             image_array = np.expand_dims(image_array, axis=0).astype(np.float32)
             inputs = image_array / 255.0
             s = time.time()
             output = session.run(output_names, {input_name: inputs})
             # print(f'匹配耗时{int((time.time() - s) * 1000)} ms')
-            shape = (1,25200,19)
+            shape = (1, 25200, 19)
             output = np.resize(output[0], shape)
             output = self.from_numpy(output)
             output = NonMaximumSuppression(output)[0]
-            output[:,0] = output[:,0]/640
-            output[:,1] = (output[:,1] - top_pad)/(640-top_pad*2)
-            output[:,2] = output[:,2]/640
-            output[:,3] = (output[:,3] - top_pad)/(640-top_pad*2)
+            output[:, 0] = output[:, 0]/640
+            output[:, 1] = (output[:, 1] - top_pad)/(640-top_pad*2)
+            output[:, 2] = output[:, 2]/640
+            output[:, 3] = (output[:, 3] - top_pad)/(640-top_pad*2)
             if self.stopFlag:
                 break
-            self.infer_queue.put([img,output])
+            self.infer_queue.put([img, output])
             actionManager.image = img
             self.onFrame(img.copy(), output)
+
     def stop(self):
         self.stopFlag = True
-    def from_numpy(self,x):
+
+    def from_numpy(self, x):
         """Converts a NumPy array to a torch tensor, maintaining device compatibility."""
         return torch.from_numpy(x) if isinstance(x, np.ndarray) else x
-    
