@@ -238,6 +238,12 @@ class GameAction:
         self.blockerAction = BlockAction(self.ctrl)
         actionManager.init(self.goToWorkAction, self.changeHeroAction, self.fixAction, self.againAction, self.advertAction)
 
+    def start(self):
+        self.stop_event = False
+        
+    def stop(self):
+        self.stop_event = True
+        
     def quit(self):
         self.thread_run = True
 

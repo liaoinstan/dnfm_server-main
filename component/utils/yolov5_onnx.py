@@ -323,14 +323,20 @@ class YOLOv5:
         self.onFrame = onFrame
         self.image_queue = image_queue
         self.infer_queue = infer_queue
-        self.stopFlag = False
+        self.runing = True
+        self.stopFlag = True #默认不开启
         self.thread = threading.Thread(target=self.thread)  # 创建线程，并指定目标函数
         self.thread.daemon = True  # 设置为守护线程（可选）
         self.thread.start()
+        
+    def start(self):
+        self.stopFlag = False
+            
+    def stop(self):
+        self.stopFlag = True
 
     def thread(self):
         session = ort.InferenceSession(self.path, providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])  # 使用GPU推理，需要Cuda环境，否则运行报错
-        # session = ort.InferenceSession(self.path,providers=['CUDAExecutionProvider','CPUExecutionProvider'])
         # 获取模型输入输出信息
         input_name = session.get_inputs()[0].name
         output_names = [output.name for output in session.get_outputs()]
@@ -339,9 +345,13 @@ class YOLOv5:
             print("当前使用的硬件加速器类型为:", session.get_providers()[0])
         else:
             print("GPU启用失败,请检查你的运行环境是否配置正确,此次运行加速器降级调整为:", session.get_providers()[0])
-        while True:
+        while self.runing:
             if self.image_queue.empty():
                 time.sleep(0.005)
+                continue
+            if self.stopFlag:
+                img = self.image_queue.get()
+                self.onFrame(img.copy(), None)
                 continue
             img = self.image_queue.get()
             image = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
@@ -360,14 +370,12 @@ class YOLOv5:
             output[:, 1] = (output[:, 1] - top_pad)/(640-top_pad*2)
             output[:, 2] = output[:, 2]/640
             output[:, 3] = (output[:, 3] - top_pad)/(640-top_pad*2)
-            if self.stopFlag:
-                break
             self.infer_queue.put([img, output])
             actionManager.image = img
             self.onFrame(img.copy(), output)
 
-    def stop(self):
-        self.stopFlag = True
+    def quit(self):
+        self.runing = False
 
     def from_numpy(self, x):
         """Converts a NumPy array to a torch tensor, maintaining device compatibility."""

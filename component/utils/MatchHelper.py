@@ -21,7 +21,8 @@ def match_template(large_image, template_image_path, threshold=0.7):
     # 读取大图和模板图
     template_image = cv2.imread(f'template/{template_image_path}')
     if large_image is None or template_image is None:
-        raise ValueError("无法读取图片，请检查图片路径是否正确:", f'template/{template_image_path}')
+        print(f"无法读取图片，请检查图片路径是否正确:template/{template_image_path}")
+        return None
 
     # 根据预设图片和设备分辨率对模版进行缩放
     template_image = __resize_template(large_image, template_image)

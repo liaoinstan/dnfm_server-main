@@ -137,24 +137,42 @@ class MainWindow(QWidget):
         if self.timer.isActive():
             return
         if frame is not None:
-
-            for boxs in output:
-                det_x1, det_y1, det_x2, det_y2, conf, label = boxs
-                x1 = int(det_x1*frame.shape[1])
-                y1 = int(det_y1*frame.shape[0])
-                x2 = int(det_x2*frame.shape[1])
-                y2 = int(det_y2*frame.shape[0])
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                cv2.putText(frame, "{:.2f}".format(conf), (int(x1), int(
-                    y1-10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-                cv2.putText(frame, YOLOv5.label[int(label)], (int(x1), int(
-                    y1-30)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+            if output is not None:
+                for boxs in output:
+                    det_x1, det_y1, det_x2, det_y2, conf, label = boxs
+                    x1 = int(det_x1*frame.shape[1])
+                    y1 = int(det_y1*frame.shape[0])
+                    x2 = int(det_x2*frame.shape[1])
+                    y2 = int(det_y2*frame.shape[0])
+                    if label <= 2:
+                        # monster
+                        color = (255, 55, 0)
+                    elif label == 6:
+                        # hero
+                        color = (0, 0, 255)
+                    elif label >= 8 and label <= 11:
+                        # door
+                        color = (14, 209, 0)
+                    elif label == 5:
+                        # go
+                        color = (0, 213, 255)
+                    else:
+                        color = (0, 255, 0)
+                    color = (color[2],color[1],color[0])
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+                    cv2.putText(frame, "{:.2f}".format(conf), (int(x1), int(
+                        y1-10)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                    cv2.putText(frame, YOLOv5.label[int(label)], (int(x1), int(
+                        y1-30)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+            # 绘制小地图锚点
             if self.drawMapPoint:
                 roomHelper.drawMapPoint(frame)
+            # 绘制小地图
             roomHelper.drawMiniMap(frame)
+            # 绘制技能按钮
             if self.drawButton:
                 buttonHelper.drawButtons(frame, self.action.ctrl.config)
-
+            # 绘制模版匹配区域
             matchDict = self.action.matchResultMap.copy()
             if len(matchDict) > 0:
                 for matchDataList in matchDict.values():
@@ -197,12 +215,14 @@ class MainWindow(QWidget):
         if self.sender() is self.startBtn:
             if self.startBtn.text() == "start":
                 self.startBtn.setText("stop")
-                self.action.stop_event = False
+                self.yolo.start()
+                self.action.start()
                 self.__createHeroList()
                 actionManager.start()
             else:
                 self.startBtn.setText("start")
-                self.action.stop_event = True
+                self.yolo.stop()
+                self.action.stop()
                 actionManager.stopAllAction()
         elif self.sender() is self.resetBtn:
             self.action.reset()
@@ -261,7 +281,7 @@ class MainWindow(QWidget):
 
     def setComponents(self, client, yolo, action):
         self.client: ScrcpyADB = client
-        self.yolo = yolo
+        self.yolo: YOLOv5 = yolo
         self.action: GameAction = action
 
     def paintEvent(self, event):
@@ -293,7 +313,7 @@ class MainWindow(QWidget):
         self.timer.stop()
 
     def closeEvent(self, event):
-        self.yolo.stop()
+        self.yolo.quit()
         self.client.stop()
         self.action.quit()
 
