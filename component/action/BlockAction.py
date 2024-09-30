@@ -24,7 +24,7 @@ class BlockAction:
     def __isRoomTimeOut(self):
         if self.timeOutRoom == 0:
             return False
-        return int((time.time() - self.timeOutRoom) * 1000) > 60000
+        return int((time.time() - self.timeOutRoom) * 1000) > 30000
 
     def updatTimer(self):
         if self.timeOutBlock == 0:  
