@@ -370,9 +370,10 @@ class YOLOv5:
             output[:, 1] = (output[:, 1] - top_pad)/(640-top_pad*2)
             output[:, 2] = output[:, 2]/640
             output[:, 3] = (output[:, 3] - top_pad)/(640-top_pad*2)
-            self.infer_queue.put([img, output])
-            actionManager.image = img
-            self.onFrame(img.copy(), output)
+            if self.runing:
+                self.infer_queue.put([img, output])
+                actionManager.image = img
+                self.onFrame(img.copy(), output)
 
     def quit(self):
         self.runing = False
