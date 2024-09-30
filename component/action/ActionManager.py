@@ -1,7 +1,8 @@
 from abc import abstractmethod
-from component.adb.game_control import GameControl
 import component.utils.MatchHelper as MatchHelper
 import component.utils.RuntimeData as R
+from PyQt5.QtCore import QTimer
+from component.utils.EventManager import eventManager
 
 
 class ActionManager:
@@ -22,6 +23,7 @@ class ActionManager:
         self.againAction = None
         self.advertAction = None
         self.image = None
+        self.matchStartTimes = 0
 
     def init(self, goToWorkAction, changeHeroAction, fixAction, againAction, advertAction):
         self.goToWorkAction = goToWorkAction
@@ -29,9 +31,14 @@ class ActionManager:
         self.fixAction = fixAction
         self.againAction = againAction
         self.advertAction = advertAction
+        
+    def reset(self):
+        self.matchStartTimes = 0
 
     def start(self):
-        if MatchHelper.match_template(self.image, 'way_to_bwj/wt.jpg'):
+        print(f"开始：{self.matchStartTimes}")
+        resultWt = MatchHelper.match_template(self.image, 'way_to_bwj/wt.jpg')
+        if resultWt:
             # 副本外
             if R.CURRENT_HERO and not R.HEROS[R.CURRENT_HERO]:
                 print("当前角色:", R.CURRENT_HERO, "开始刷图")
@@ -43,19 +50,26 @@ class ActionManager:
                 else:
                     print("设定的角色疲劳已全部耗尽,停止脚本")
                     self.stopAllAction()
-                    return
-
+                    eventManager.publish('FINISH_EVENT')
+            self.reset()
         elif MatchHelper.match_template(self.image, 'change_hero/hero_tag.jpg'):
             # 角色选择界面
             print("切换角色界面")
+            self.reset()
             self.changeHeroAction.start(2)
-
         else:
-            # 副本内
-            print("副本内,准备战斗")
-            self.goToWorkAction.stop()
-            self.changeHeroAction.stop()
-            return
+            self.matchStartTimes += 1
+            if self.matchStartTimes <=3:
+                timer = QTimer()
+                timer.singleShot(500, self.start)
+            else:
+                # 副本内
+                print("副本内,准备战斗")
+                self.reset()
+                self.goToWorkAction.stop()
+                self.changeHeroAction.stop()
+                return
+            
 
     def stopAllAction(self):
         self.goToWorkAction.stop()

@@ -6,6 +6,7 @@ from component.action.BaseAction import BaseAction
 from enum import Enum
 import component.utils.RuntimeData as R
 from component.action.ActionManager import actionManager
+from component.utils.EventManager import eventManager
 
 
 class ChangeHeroAction(BaseAction):
@@ -87,6 +88,7 @@ class ChangeHeroAction(BaseAction):
                     else:
                         print("设定的角色疲劳已全部耗尽,停止脚本。")
                         self.stop()
+                        eventManager.publish('FINISH_EVENT')
                         return True
                 else:
                     self.checkTagsCount = len(resultTags)

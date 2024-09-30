@@ -10,6 +10,7 @@ from component.adb.scrcpy_adb import ScrcpyADB
 from component.action.ActionManager import actionManager
 from config import SHOW_MAP_POINT, SHOW_BUTTON, ALPHA, WINDOW_SCALE, WORKERS, VERSION
 from component.ui.DrawLabel import DrawLabel
+from component.utils.EventManager import eventManager
 
 
 class MainWindow(QWidget):
@@ -22,6 +23,7 @@ class MainWindow(QWidget):
         self.rightBarWidth = toDp(120)
         self.hSpace = toDp(3)
         self.initUI()
+        eventManager.subscribe('FINISH_EVENT', self.onFinishEvent)
 
     def initUI(self):
         self.setWindowTitle(f'DNFM v{VERSION}')
@@ -173,6 +175,9 @@ class MainWindow(QWidget):
         self.client: ScrcpyADB = client
         self.yolo: YOLOv5 = yolo
         self.action: GameAction = action
+
+    def onFinishEvent(self):
+        self.startBtn.click()
 
     def closeEvent(self, event):
         print("退出")
