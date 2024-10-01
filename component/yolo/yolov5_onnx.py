@@ -324,14 +324,15 @@ class YOLOv5:
         self.image_queue = image_queue
         self.infer_queue = infer_queue
         self.runing = True
-        self.stopFlag = True #默认不开启
+        self.stopFlag = True  # 默认不开启
+        self.isFirst = True
         self.thread = threading.Thread(target=self.thread)  # 创建线程，并指定目标函数
         self.thread.daemon = True  # 设置为守护线程（可选）
         self.thread.start()
-        
+
     def start(self):
         self.stopFlag = False
-            
+
     def stop(self):
         self.stopFlag = True
 
@@ -349,7 +350,7 @@ class YOLOv5:
             if self.image_queue.empty():
                 time.sleep(0.005)
                 continue
-            if self.stopFlag:
+            if self.stopFlag and not self.isFirst:
                 img = self.image_queue.get()
                 self.onFrame(img.copy(), None)
                 continue
@@ -362,6 +363,10 @@ class YOLOv5:
             s = time.time()
             output = session.run(output_names, {input_name: inputs})
             # print(f'匹配耗时{int((time.time() - s) * 1000)} ms')
+            if self.isFirst:
+                self.isFirst = False
+                print("onnxruntime 初始化完成")
+                continue
             shape = (1, 25200, 19)
             output = np.resize(output[0], shape)
             output = self.from_numpy(output)

@@ -3,7 +3,7 @@ from PyQt5.QtGui import QImage, QPixmap, QMouseEvent, QPainter,  QFont, QColor, 
 from PyQt5.QtWidgets import QLabel
 import cv2
 import time
-from component.utils.yolov5_onnx import YOLOv5
+from component.yolo.yolov5_onnx import YOLOv5
 from component.utils.BWJRoomHelperV2 import roomHelper
 from component.utils.ButtonHelper import buttonHelper
 import component.utils.RuntimeData as R
@@ -24,6 +24,11 @@ class DrawLabel(QLabel):
         self.mousePressed = False
         self.debug = False
         self.lastPixmap = None
+        self.frameCount = 0
+        self.frameTime = 0
+        self.fps = 0
+        
+        self.output = None
 
     def setMouseCallback(self, callbackFrameMouseEvent):
         self.callbackFrameMouseEvent = callbackFrameMouseEvent
@@ -46,6 +51,18 @@ class DrawLabel(QLabel):
             self.setPixmap(pix)
 
     def setFrame(self, frame, output, matchDict=None, buttons=None):
+        self.output = output
+        
+        self.frameCount += 1
+        if self.frameCount >=120:
+            self.frameCount = 0
+            self.frameTime = 0
+        if self.frameTime == 0:
+            self.frameTime = time.time()
+        else:
+            timeGap = int((time.time() - self.frameTime) * 1000)
+            self.fps = int(self.frameCount/timeGap*1000)
+            # print("fps",fps,self.frameCount)
         if frame is not None:
             if output is not None:
                 for boxs in output:
@@ -110,19 +127,16 @@ class DrawLabel(QLabel):
             return
         if self.mousePointTimeOut != 0 and int((time.time() - self.mousePointTimeOut) * 1000) > 2000:
             self.mousePosition = None
-        if self.mousePosition is None:
-            return
-        painter = QPainter(self)
-        self.text = f'{self.mousePosition[0].x(),self.mousePosition[0].y()}-窗口坐标\n{self.mousePosition[1].x(),self.mousePosition[1].y()}-设备坐标'
-        # 计算缩放值
-        textSize = 10
-        perWidth = 1000
+        # if self.mousePosition is None:
+        #     return
+
+        
+
         labelWidth = self.size().width()
         labelHeight = self.size().height()
         pixWidth = self.pixmap().size().width()
         pixHeight = self.pixmap().size().height()
-        scale = pixWidth/perWidth
-
+        
         # 计算画布坐标
         labelRate = labelHeight/labelWidth
         pixRate = pixHeight/pixWidth
@@ -134,22 +148,35 @@ class DrawLabel(QLabel):
             y = int((labelHeight-pixHeight)/2)
         # 画布坐标
         rect = QRect(x, y, pixWidth, pixHeight)
+        # 计算缩放值
+        textSize = 10
+        perWidth = 1000
+        scale = pixWidth/perWidth
         # 缩放画布坐标
         rectScale = QRect(rect.x()/scale, rect.y()/scale, rect.width()/scale, rect.height()/scale)
-
+        
+        # 文本绘制
+        painter = QPainter(self)        
         transform = QTransform()
         transform.scale(scale, scale)
         font = QFont('Arial', textSize)
         painter.setTransform(transform)
         painter.setFont(font)
         painter.setPen(QColor('green'))
-
+        
         # 绘制dubug区域
         if self.debug:
             painter.setBrush(QColor(0, 0, 255, 128))
             painter.drawRect(rectScale)
-        # 绘制坐标
-        painter.drawText(rectScale, Qt.AlignRight | Qt.AlignBottom, self.text)
+        if  self.mousePosition is not None:
+            # 绘制坐标
+            self.text = f'{self.mousePosition[0].x(),self.mousePosition[0].y()}-窗口坐标\n{self.mousePosition[1].x(),self.mousePosition[1].y()}-设备坐标'
+            painter.drawText(rectScale, Qt.AlignRight | Qt.AlignBottom, self.text)
+        # 绘制FPS
+        painter.setPen(QColor('red'))
+        font = QFont('Arial', 6)
+        painter.setFont(font)
+        painter.drawText(rectScale, Qt.AlignLeft | Qt.AlignTop, f'FPS:{self.fps}')
 
     def onMouseEvent(self, evt: QMouseEvent):
         if not self.mouseContrl:

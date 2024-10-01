@@ -3,7 +3,7 @@ import sys
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QHBoxLayout, QPushButton, QVBoxLayout, QStackedLayout, QSizePolicy, QCheckBox, QSlider, QFrame, QDesktopWidget
 from component.ui.SizeHelper import toDp
-from component.utils.yolov5_onnx import YOLOv5
+from component.yolo.yolov5_onnx import YOLOv5
 from component.action.game_action import GameAction
 import component.utils.RuntimeData as R
 from component.adb.scrcpy_adb import ScrcpyADB

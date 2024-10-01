@@ -1,4 +1,4 @@
-from component.utils.yolov5_onnx import YOLOv5
+from component.yolo.yolov5_onnx import YOLOv5
 from component.adb.scrcpy_adb import ScrcpyADB
 from component.adb.game_control import GameControl
 from component.action.game_action import GameAction
@@ -7,6 +7,7 @@ import os
 from component.ui.MainWindow import MainWindow
 from PyQt5.QtWidgets import QApplication
 import sys
+from config import FPS
 
 
 class AutoCleaningQueue(queue.Queue):
@@ -19,7 +20,7 @@ class AutoCleaningQueue(queue.Queue):
 if __name__ == '__main__':
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    pathOnnx = os.path.join(current_dir, "./component/utils/dnfm.onnx")
+    pathOnnx = os.path.join(current_dir, "./component/yolo/dnfm.onnx")
     pathButtonsJson = os.path.join(current_dir, "./buttons.json")
     image_queue = AutoCleaningQueue(maxsize=3)
     infer_queue = AutoCleaningQueue(maxsize=3)
@@ -29,7 +30,7 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = MainWindow()
     # 初始化各个组件
-    client = ScrcpyADB(image_queue, window.onConnect, window.onDisConnect, max_fps=15)
+    client = ScrcpyADB(image_queue, window.onConnect, window.onDisConnect, max_fps=FPS)
     yolo = YOLOv5(pathOnnx, image_queue, infer_queue, window.onFrame)
     control = GameControl(client, pathButtonsJson)
     action = GameAction(control, infer_queue)

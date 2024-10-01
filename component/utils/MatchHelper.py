@@ -19,6 +19,9 @@ def __resize_template(large_image, template_image):
 
 def match_template(large_image, template_image_path, threshold=0.7):
     # 读取大图和模板图
+    if large_image is None:
+        print(f"无法获取屏幕")
+        return None
     template_image = cv2.imread(f'template/{template_image_path}')
     if large_image is None or template_image is None:
         print(f"无法读取图片，请检查图片路径是否正确:template/{template_image_path}")
