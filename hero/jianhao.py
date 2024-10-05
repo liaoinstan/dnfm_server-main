@@ -4,10 +4,10 @@ from .hero import Hero
 # 通用逻辑已迁移至父类Hero,其他英雄请继承Hero
 
 
-class Naima(Hero):
+class Jianhao(Hero):
     
     def get_config_file(self):
-        return "naima.json"
+        return "andi.json"
 
     def control(self, hero_pos, image, boxs, MapNumber):
         # 首次进入房间释放预定技能
@@ -18,13 +18,10 @@ class Naima(Hero):
                 time.sleep(wait)
                 self.skill("勇气祝福")
                 time.sleep(1.2)
-                self.ctrl.move(330)
-                time.sleep(0.4)
-                self.ctrl.move(0)
-                time.sleep(0.8)
+                self.ctrl.move(335)
+                time.sleep(0.3)
                 self.skill("光芒烬盾")
                 time.sleep(0.5)
-                self.skill("沐天之光")
             elif MapNumber == 1:
                 time.sleep(wait)
                 self.ctrl.move(295)
@@ -125,4 +122,4 @@ class Naima(Hero):
     # 
     #################################################################################
     def get_auto_skill(self): 
-        return ["唤雷符"]
+        return ["惩戒加身"]

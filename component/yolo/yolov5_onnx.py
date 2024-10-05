@@ -9,6 +9,42 @@ import onnxruntime as ort
 from component.action.ActionManager import actionManager
 
 
+def letterbox(im, new_shape=(640, 640), color=(114, 114, 114), auto=True, scaleFill=False, scaleup=True, stride=32):
+    # Resize and pad image while meeting stride-multiple constraints
+    shape = im.shape[:2]  # current shape [height, width]
+    if isinstance(new_shape, int):
+        new_shape = (new_shape, new_shape)
+
+    # Scale ratio (new / old)
+    r = min(new_shape[0] / shape[0], new_shape[1] / shape[1])
+    if not scaleup:  # only scale down, do not scale up (for better val mAP)
+        r = min(r, 1.0)
+
+    # Compute padding
+    ratio = r, r  # width, height ratios
+    new_unpad = int(round(shape[1] * r)), int(round(shape[0] * r))
+    dw, dh = new_shape[1] - new_unpad[0], new_shape[0] - \
+        new_unpad[1]  # wh padding
+    if auto:  # minimum rectangle
+        dw, dh = np.mod(dw, stride), np.mod(dh, stride)  # wh padding
+    elif scaleFill:  # stretch
+        dw, dh = 0.0, 0.0
+        new_unpad = (new_shape[1], new_shape[0])
+        ratio = new_shape[1] / shape[1], new_shape[0] / \
+            shape[0]  # width, height ratios
+
+    dw /= 2  # divide padding into 2 sides
+    dh /= 2
+
+    if shape[::-1] != new_unpad:  # resize
+        im = cv2.resize(im, new_unpad, interpolation=cv2.INTER_LINEAR)
+    top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
+    left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
+    im = cv2.copyMakeBorder(im, top, bottom, left, right,
+                            cv2.BORDER_CONSTANT, value=color)  # add border
+    return im, ratio, (dw, dh)
+
+
 def resize_img(im):
     target_size = 640   # 目标尺寸
     width, height = im.size
@@ -337,6 +373,7 @@ class YOLOv5:
         self.stopFlag = True
 
     def thread(self):
+        DEBUG = False
         session = ort.InferenceSession(self.path, providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])  # 使用GPU推理，需要Cuda环境，否则运行报错
         # 获取模型输入输出信息
         input_name = session.get_inputs()[0].name
@@ -354,15 +391,26 @@ class YOLOv5:
                 img = self.image_queue.get()
                 self.onFrame(img.copy(), None)
                 continue
-            img = self.image_queue.get()
-            image = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-            image, top_pad = resize_img(image)
-            image_array = np.array(image).transpose((2, 0, 1))
-            image_array = np.expand_dims(image_array, axis=0).astype(np.float32)
-            inputs = image_array / 255.0
-            s = time.time()
+            if DEBUG:
+                sAll = time.time()
+                s = time.time()
+            img0 = self.image_queue.get()
+            img = img0
+            img, radio, (dw, dh) = letterbox(img, [640, 640], stride=64, auto=False)
+            top_pad = int(dh)
+            img = img.transpose((2, 0, 1))[::-1]
+            img = np.expand_dims(img, axis=0)
+            img = np.ascontiguousarray(img)
+            img = img.astype('float32')
+            inputs = img / 255.0
+            if len(img.shape) == 3:
+                img = img[None]  # expand for batch dim
+            if DEBUG:
+                print(f'前期耗时{int((time.time() - s) * 1000)} ms')
+                s = time.time()
             output = session.run(output_names, {input_name: inputs})
-            # print(f'匹配耗时{int((time.time() - s) * 1000)} ms')
+            if DEBUG:
+                print(f'匹配耗时{int((time.time() - s) * 1000)} ms')
             if self.isFirst:
                 self.isFirst = False
                 print("onnxruntime 初始化完成")
@@ -375,10 +423,12 @@ class YOLOv5:
             output[:, 1] = (output[:, 1] - top_pad)/(640-top_pad*2)
             output[:, 2] = output[:, 2]/640
             output[:, 3] = (output[:, 3] - top_pad)/(640-top_pad*2)
+            if DEBUG:
+                print(f'总计耗时{int((time.time() - sAll) * 1000)} ms')
             if self.runing:
-                self.infer_queue.put([img, output])
-                actionManager.image = img
-                self.onFrame(img.copy(), output)
+                self.infer_queue.put([img0, output])
+                actionManager.image = img0
+                self.onFrame(img0, output)
 
     def quit(self):
         self.runing = False

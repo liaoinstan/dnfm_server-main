@@ -6,14 +6,16 @@ from typing import List
 
 
 class Hero:
-    
+
     INSTANCE_MAP = {}
-    
+
     @staticmethod
-    def getInstance(heroJob: str, ctrl):
+    def getInstance(heroJob: str, ctrl=None):
         if heroJob in Hero.INSTANCE_MAP:
             return Hero.INSTANCE_MAP[heroJob]
         else:
+            if ctrl is None:
+                return None
             print(f"初始化职业配置：{heroJob}{('(默认)'if heroJob == '奶妈' else '')}")
             if heroJob == "奶妈":
                 from hero.naima import Naima
@@ -24,6 +26,12 @@ class Hero:
             elif heroJob == "剑魂":
                 from hero.jianhun import Jianhun
                 hero = Jianhun(ctrl)
+            elif heroJob == "剑豪":
+                from hero.jianhao import Jianhao
+                hero = Jianhao(ctrl)
+            elif heroJob == "暗帝":
+                from hero.andi import Andi
+                hero = Andi(ctrl)
             else:
                 hero = None
             if hero:
@@ -33,10 +41,9 @@ class Hero:
                 print(f"职业配置错误，使用默认奶奶配置（职业【{heroJob}】不在hero.py的配置中,请优先处理此问题！）")
                 from hero.naima import Naima
                 return Naima(ctrl)
-        
-    
+
     def __init__(self, ctrl):
-        self.ctrl:GameControl = ctrl
+        self.ctrl: GameControl = ctrl
         self.pre_room_num = -1
         self.last_angle = 0
         self.last_auto_skill_time = 0
@@ -178,17 +185,17 @@ class Hero:
                 self.ctrl.attack()
         else:
             distance = math.sqrt(distance_x**2 + distance_y**2)
-            if distance>0.3:
+            if distance > 0.3:
                 self.ctrl.move(angle)
                 self.ctrl.attack(False)
             else:
                 self.ctrl.move(angle)
                 self.ctrl.attack(False)
-                time.sleep(distance*2)
+                time.sleep(distance*3)
                 self.ctrl.attack(True)
         self.last_angle = angle
         return angle
-    
+
     #################################################################################
     # 特殊动作
     # 默认特殊动作

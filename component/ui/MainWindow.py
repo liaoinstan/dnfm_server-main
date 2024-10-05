@@ -11,6 +11,7 @@ from component.action.ActionManager import actionManager
 from config import SHOW_MAP_POINT, SHOW_BUTTON, ALPHA, WINDOW_SCALE, WORKERS, VERSION
 from component.ui.DrawLabel import DrawLabel
 from component.utils.EventManager import eventManager
+from PyQt5.QtGui import QFont
 
 
 class MainWindow(QWidget):
@@ -100,7 +101,18 @@ class MainWindow(QWidget):
         self.slider.setValue(alpha)
         self.slider.setTickPosition(2)  # 设置刻度位置
         self.labelAlpha.setAlignment(Qt.AlignCenter)  # 设置文字居中显示
-
+        
+        fontText = QFont()
+        fontText.setPointSize(toDp(8))  # 设置文字大小为16
+        self.startBtn.setFont(fontText)
+        self.resetBtn.setFont(fontText)
+        self.screenshotBtn.setFont(fontText)
+        self.checkBoxPoint.setFont(fontText)
+        self.checkBoxButtons.setFont(fontText)
+        self.checkBoxMouse.setFont(fontText)
+        self.labelAlpha.setFont(fontText)
+        self.labelLoading.setFont(fontText)
+        
         btnWidth = self.rightBarWidth
         btnHeight = toDp(30)
         self.startBtn.setFixedSize(btnWidth, btnHeight)

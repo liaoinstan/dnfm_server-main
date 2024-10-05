@@ -368,7 +368,7 @@ class GameAction:
                 room_num = 9
 
             # 检测行动方向
-            if room_num >= 0:
+            if room_num is not None and room_num >= 0:
                 direction = self.buwanjia[room_num]
                 if not self.hasKillSZT and (room_num == 7 or room_num == 8):
                     # 如果还没打狮子头就意外进了7号房，那么向左边走
