@@ -17,7 +17,8 @@ def __resize_template(large_image, template_image):
     caculRate = caculRate*TUNING_MATCH
     return cv2.resize(template_image, (int(template_image.shape[1]*caculRate), int(template_image.shape[0]*caculRate)))
 
-def match_template(large_image, template_image_path, threshold=0.7):
+
+def match_template(large_image, template_image_path, threshold=0.7, area=None):
     # 读取大图和模板图
     if large_image is None:
         print(f"无法获取屏幕")
@@ -29,6 +30,14 @@ def match_template(large_image, template_image_path, threshold=0.7):
 
     # 根据预设图片和设备分辨率对模版进行缩放
     template_image = __resize_template(large_image, template_image)
+    # 局部匹配
+    if area is not None:
+        height, width = large_image.shape[:2]
+        start_x = int(width * area[0])
+        end_x = int(width * area[1])
+        start_y = int(height * area[2])
+        end_y = int(height * area[3])
+        large_image = large_image[start_y:end_y, start_x:end_x]
 
     # 使用模板匹配方法查找匹配位置
     result = cv2.matchTemplate(large_image, template_image, cv2.TM_CCOEFF_NORMED)
@@ -37,11 +46,13 @@ def match_template(large_image, template_image_path, threshold=0.7):
     if LOG_MATCH:
         print("匹配精度：", max_val)
 
-    w, h = template_image.shape[1], template_image.shape[0]
+    if area is not None:
+        max_loc = (max_loc[0]+start_x, max_loc[1]+start_y)
 
     # 判断是否匹配成功
     if max_val >= threshold:
         # 计算匹配区域的中心点坐标
+        w, h = template_image.shape[1], template_image.shape[0]
         top_left = max_loc
         center_x = top_left[0] + w // 2
         center_y = top_left[1] + h // 2

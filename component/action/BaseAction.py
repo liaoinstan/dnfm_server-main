@@ -20,10 +20,10 @@ class BaseAction:
     def getPathEnum(self):
         pass
     
-    def match(self, image, path, showRect=True):
-        result = MatchHelper.match_template(image, path)
+    def match(self, image, enum, showRect=True):
+        result = MatchHelper.match_template(image, enum.path)
         if showRect and result is not None:
-            self.updateMatchResultMap({path: [result]})
+            self.updateMatchResultMap({enum.path: [result]})
         else:
             self.updateMatchResultMap({})
         return result
@@ -39,10 +39,10 @@ class BaseAction:
         把匹配结果显示到屏幕上
         '''
         for enumName, enum in self.getPathEnum().__members__.items():
-            if enum.value in resultMap and resultMap[enum.value] is not None:
-                self.matchResultMap[enum.value] = resultMap[enum.value]
+            if enum.path in resultMap and resultMap[enum.path] is not None:
+                self.matchResultMap[enum.path] = resultMap[enum.path]
             else:
-                self.matchResultMap.pop(enum.value, None)
+                self.matchResultMap.pop(enum.path, None)
                 
     def removeAllResults(self):
         '''

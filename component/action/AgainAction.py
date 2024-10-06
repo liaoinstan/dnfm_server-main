@@ -12,12 +12,16 @@ from component.action.ActionManager import actionManager
 class AgainAction(BaseAction):
 
     class Path(Enum):
-        AGAIN = 'again/again.jpg'
-        GOHOME = 'again/go_home.jpg'
-        NOT_SHOW = 'dialog/dialog_not_show.jpg'
-        YES = 'dialog/dialog_yes.jpg'
-        LOADING = 'way_to_bwj/loading.jpg'
-        WT = 'way_to_bwj/wt.jpg'
+        AGAIN = 'again/again.jpg', (0.66, 1, 0, 0.5)
+        GOHOME = 'again/go_home.jpg', (0.66, 1, 0, 0.5)
+        NOT_SHOW = 'dialog/dialog_not_show.jpg', (0.25, 0.75, 0.33, 0.66)
+        YES = 'dialog/dialog_yes.jpg', (0.5, 0.8, 0.33, 0.8)
+        LOADING = 'way_to_bwj/loading.jpg', None
+        WT = 'way_to_bwj/wt.jpg', (0.8, 1, 0, 1)
+
+        def __init__(self, path, area):
+            self.path = path
+            self.area = area
 
     def getPathEnum(self):
         return AgainAction.Path
@@ -51,7 +55,7 @@ class AgainAction(BaseAction):
             if waitTime > 10000:
                 if not self.clickedGoHome:
                     print("再次挑战超时，检测回城")
-                    resultGoHome = self.match(image, AgainAction.Path.GOHOME.value)
+                    resultGoHome = self.match(image, AgainAction.Path.GOHOME)
                     if resultGoHome:
                         print("点击回城")
                         time.sleep(random.uniform(0.8, 1.2))
@@ -65,16 +69,16 @@ class AgainAction(BaseAction):
                         print("异常：没有发现回城按钮")
                         self.stop()
                 else:
-                    resultWt = self.match(image, AgainAction.Path.WT.value)
+                    resultWt = self.match(image, AgainAction.Path.WT)
                     if resultWt:
                         print("回到城镇")
                         self.stop()
                         time.sleep(0.3)
                         # 重新开启下一轮角色检查
                         actionManager.start()
-                
+
         if self.step == 0:
-            resultAgain = self.match(image, AgainAction.Path.AGAIN.value)
+            resultAgain = self.match(image, AgainAction.Path.AGAIN)
             if resultAgain:
                 print("检测到再次挑战，点击")
                 time.sleep(random.uniform(0.8, 1.2))
@@ -85,15 +89,15 @@ class AgainAction(BaseAction):
                 self.step = 1
             time.sleep(0.3)
         elif self.step == 1:
-            if self.match(image, AgainAction.Path.LOADING.value, showRect=False):
+            if self.match(image, AgainAction.Path.LOADING, showRect=False):
                 print("重新挑战")
                 self.stop()
             else:
-                resultYes = self.match(image, AgainAction.Path.YES.value)
+                resultYes = self.match(image, AgainAction.Path.YES)
                 if resultYes:
                     print("检测到弹窗，关闭")
                     time.sleep(random.uniform(0.8, 1.2))
-                    resultCheckBox = self.match(image, AgainAction.Path.NOT_SHOW.value)
+                    resultCheckBox = self.match(image, AgainAction.Path.NOT_SHOW)
                     if resultCheckBox:
                         time.sleep(random.uniform(0.8, 1.2))
                         self.click(resultCheckBox)
@@ -102,7 +106,7 @@ class AgainAction(BaseAction):
                     self.step = 2
             time.sleep(0.1)
         elif self.step == 2:
-            if self.match(image, AgainAction.Path.LOADING.value, showRect=False):
+            if self.match(image, AgainAction.Path.LOADING, showRect=False):
                 print("重新挑战")
                 self.stop()
             time.sleep(0.1)

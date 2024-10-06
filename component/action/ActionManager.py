@@ -37,7 +37,7 @@ class ActionManager:
 
     def start(self):
         print(f"开始：{self.matchStartTimes}")
-        resultWt = MatchHelper.match_template(self.image, 'way_to_bwj/wt.jpg')
+        resultWt = MatchHelper.match_template(self.image, 'way_to_bwj/wt.jpg', area=(0.8, 1, 0, 1))
         if resultWt:
             # 副本外
             if R.CURRENT_HERO and not R.HEROS[R.CURRENT_HERO]:

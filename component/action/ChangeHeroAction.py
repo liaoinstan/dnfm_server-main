@@ -12,11 +12,15 @@ from component.utils.EventManager import eventManager
 class ChangeHeroAction(BaseAction):
 
     class Path(Enum):
-        HERO_SETTING = 'change_hero/hero_setting.jpg'
-        HERO_CHANGE = 'change_hero/hero_change.jpg'
-        HERO_TAG = 'change_hero/hero_tag.jpg'
-        HERO_ZERO = 'change_hero/hero_zero.jpg'
-        HERO_START = 'change_hero/hero_start.jpg'
+        HERO_SETTING = 'change_hero/hero_setting.jpg', (0.8, 1, 0, 0.33)
+        HERO_CHANGE = 'change_hero/hero_change.jpg', (0.5, 0.8, 0.66, 1)
+        HERO_TAG = 'change_hero/hero_tag.jpg', None
+        HERO_ZERO = 'change_hero/hero_zero.jpg', None
+        HERO_START = 'change_hero/hero_start.jpg', (0.33, 0.66, 0.66, 1)
+
+        def __init__(self, path, area):
+            self.path = path
+            self.area = area
 
     def getPathEnum(self):
         return ChangeHeroAction.Path
@@ -45,23 +49,23 @@ class ChangeHeroAction(BaseAction):
         if not self.runing:
             return False
         if self.step == 0:
-            resultSetting = self.match(image, ChangeHeroAction.Path.HERO_SETTING.value)
+            resultSetting = self.match(image, ChangeHeroAction.Path.HERO_SETTING)
             if resultSetting:
                 self.click(resultSetting)
                 time.sleep(random.uniform(0.8, 1.2))
                 self.step = 1
             time.sleep(0.3)
         elif self.step == 1:
-            resultChange = self.match(image, ChangeHeroAction.Path.HERO_CHANGE.value)
+            resultChange = self.match(image, ChangeHeroAction.Path.HERO_CHANGE)
             if resultChange:
                 self.click(resultChange)
                 time.sleep(random.uniform(0.8, 1.2))
                 self.step = 2
             time.sleep(0.3)
         elif self.step == 2:
-            resultTags = MatchHelper.match_templates(image, ChangeHeroAction.Path.HERO_TAG.value)
-            resultZeros = MatchHelper.match_templates(image, ChangeHeroAction.Path.HERO_ZERO.value)
-            matchResultMap = {ChangeHeroAction.Path.HERO_TAG.value: resultTags, ChangeHeroAction.Path.HERO_ZERO.value: resultZeros}
+            resultTags = MatchHelper.match_templates(image, ChangeHeroAction.Path.HERO_TAG.path)
+            resultZeros = MatchHelper.match_templates(image, ChangeHeroAction.Path.HERO_ZERO.path)
+            matchResultMap = {ChangeHeroAction.Path.HERO_TAG.path: resultTags, ChangeHeroAction.Path.HERO_ZERO.path: resultZeros}
             self.updateMatchResultMap(matchResultMap)
             if resultTags:
                 print("检测到英雄位置：", len(resultTags))
@@ -94,7 +98,7 @@ class ChangeHeroAction(BaseAction):
                     self.checkTagsCount = len(resultTags)
             time.sleep(0.5)
         elif self.step == 3:
-            resultStart = self.match(image, ChangeHeroAction.Path.HERO_START.value)
+            resultStart = self.match(image, ChangeHeroAction.Path.HERO_START)
             if resultStart:
                 print("已选择英雄，点击开始")
                 self.click(resultStart)
