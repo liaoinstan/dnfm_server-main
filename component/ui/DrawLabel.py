@@ -131,7 +131,7 @@ class DrawLabel(QLabel):
         painter.setTransform(transform)
         if self.mousePosition is not None:
             # 绘制坐标
-            font = QFont('Arial', 10)
+            font = QFont('Arial', 6)
             painter.setFont(font)
             painter.setPen(QColor('green'))
             self.text = f'{self.mousePosition[0].x(),self.mousePosition[0].y()}-窗口坐标\n{self.mousePosition[1].x(),self.mousePosition[1].y()}-设备坐标'

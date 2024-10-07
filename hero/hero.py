@@ -32,6 +32,9 @@ class Hero:
             elif heroJob == "暗帝":
                 from hero.andi import Andi
                 hero = Andi(ctrl)
+            elif heroJob == "剑宗":
+                from hero.jianzong import JianZong
+                hero = JianZong(ctrl)
             else:
                 hero = None
             if hero:
@@ -50,12 +53,13 @@ class Hero:
         import os
         import json
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        file_path = os.path.join(current_dir, self.get_config_file())
-        with open(file_path, 'r', encoding='utf-8') as file:
-            self.dict = json.load(file)  # 解析 JSON 文件
+        self.dict = self.skillMap()
+        # file_path = os.path.join(current_dir, self.get_config_file())
+        # with open(file_path, 'r', encoding='utf-8') as file:
+        #     self.dict = json.load(file)  # 解析 JSON 文件
 
     @abstractmethod
-    def get_config_file(self) -> List[str]:
+    def skillMap(self) -> List[str]:
         pass
 
     @abstractmethod

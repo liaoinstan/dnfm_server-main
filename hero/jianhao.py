@@ -5,9 +5,27 @@ from .hero import Hero
 
 
 class Jianhao(Hero):
-    
-    def get_config_file(self):
-        return "andi.json"
+
+    # 配置每个英雄的键位映射表
+    def skillMap(self):
+        return {
+            "后跳": "Jump_Back",
+            "光明惩戒": "button1",
+            "惩戒加身": "button2",
+            "唤雷符": "button3",
+            "沐天之光": "button4",
+            "领悟之雷": "button5",
+            "光芒烬盾": "button6",
+            "胜利之矛": "button7",
+            "觉醒": "button8",
+            "光明之杖": "button9",
+            "光明锁环": "button10",
+            "勇气颂歌": "button11",
+            "temp1": "button12",
+            "勇气祝福": "button13",
+            "temp2": "button14",
+            "temp3": "button15"
+        }
 
     def control(self, hero_pos, image, boxs, MapNumber):
         # 首次进入房间释放预定技能
@@ -119,7 +137,7 @@ class Jianhao(Hero):
     # 给角色安排1-2个冷却低的小技能（最好是不在上面的预定施放列表中的）
     # 自动攻击期间，每隔2.5秒，尝试施放一次该技能，其余时间普攻
     # （把几个小技能做成一键连招可以节省键位，只需填写连招第一个技能名，每2.5秒会点一次连招）
-    # 
+    #
     #################################################################################
-    def get_auto_skill(self): 
+    def get_auto_skill(self):
         return ["惩戒加身"]

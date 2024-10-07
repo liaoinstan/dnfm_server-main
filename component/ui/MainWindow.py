@@ -40,7 +40,7 @@ class MainWindow(QWidget):
         vline.setFrameShape(QFrame.VLine)
         vline.setFrameShadow(QFrame.Sunken)
         spacer = QWidget()
-        spacer.setFixedSize(3, 3)
+        spacer.setFixedSize(self.hSpace, self.hSpace)
         self.labelFrame = DrawLabel()
         self.labelFrame.setAlignment(Qt.AlignCenter)
         self.labelFrame.setMouseCallback(self.onFrameMouseEvent)
@@ -101,7 +101,7 @@ class MainWindow(QWidget):
         self.slider.setValue(alpha)
         self.slider.setTickPosition(2)  # 设置刻度位置
         self.labelAlpha.setAlignment(Qt.AlignCenter)  # 设置文字居中显示
-        
+
         fontText = QFont()
         fontText.setPointSize(toDp(8))  # 设置文字大小为16
         self.startBtn.setFont(fontText)
@@ -112,7 +112,7 @@ class MainWindow(QWidget):
         self.checkBoxMouse.setFont(fontText)
         self.labelAlpha.setFont(fontText)
         self.labelLoading.setFont(fontText)
-        
+
         btnWidth = self.rightBarWidth
         btnHeight = toDp(30)
         self.startBtn.setFixedSize(btnWidth, btnHeight)
@@ -127,10 +127,8 @@ class MainWindow(QWidget):
 
     def resizeToDefault(self):
         screen = QDesktopWidget().screenGeometry()
-        w = R.FRAME_WIDTH+self.rightBarWidth+self.hSpace
-        h = int(R.FRAME_WIDTH*R.RATE)
-        w = int(w * WINDOW_SCALE)
-        h = int(h * WINDOW_SCALE)
+        w = R.FRAME_WIDTH * WINDOW_SCALE+self.rightBarWidth+self.hSpace
+        h = int(R.FRAME_WIDTH*R.RATE * WINDOW_SCALE)
         x = screen.width() - w - 100
         y = screen.height() - h - 150
         self.setGeometry(x, y, w, h)

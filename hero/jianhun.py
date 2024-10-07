@@ -5,8 +5,26 @@ from .hero import Hero
 class Jianhun(Hero):
 
     # 配置每个英雄的键位映射表
-    def get_config_file(self):
-        return "jianhun.json"
+    def skillMap(self):
+        return {
+            "后跳": "Jump_Back",
+            "取消": "Jump",
+            "崩山击": "button1",
+            "三段斩": "button2",
+            "小小乱舞": "button3",
+            "小乱舞": "button4",
+            "temp1": "button5",
+            "咸鱼连突": "button6",
+            "破军": "button7",
+            "觉醒": "button8",
+            "猛龙": "button9",
+            "乱舞": "button10",
+            "小拔刀": "button11",
+            "temp3": "button12",
+            "上状态": "button13",
+            "temp2": "button14",
+            "temp4": "button15"
+        }
 
     # 每个房间的预订技能，只会在房间有怪的时候执行
     def control(self, hero_pos, image, boxs, MapNumber):
@@ -123,10 +141,10 @@ class Jianhun(Hero):
     #################################################################################
     def get_auto_skill(self):
         return ["小小乱舞"]
-    
+
     #################################################################################
     # 特殊动作
-    # 
+    #
     # 某些情况下希望人物做出一些特殊动作而设计
     # 比如说剑魂打完狮子头回到6号房时，用五段斩跑图直接进入7号房
     # 没有特殊动作的英雄，可以不写这个方法

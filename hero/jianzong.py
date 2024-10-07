@@ -2,27 +2,28 @@ import time
 from .hero import Hero
 
 
-class Guiqi(Hero):
+class JianZong(Hero):
 
     # 配置每个英雄的键位映射表
     def skillMap(self):
         return {
             "后跳": "Jump_Back",
-            "爪子": "button1",
-            "小炎剑": "button2",
-            "鬼影剑": "button3",
-            "月光闪": "button4",
-            "墓碑": "button5",
-            "地裂波动剑": "button6",
-            "闪": "button7",
-            "觉醒": "button8",
-            "冥炎剑": "button9",
-            "冰阵": "button10",
-            "毒阵": "button11",
-            "减防": "button12",
-            "上增益": "button13",
-            "temp3": "button14",
-            "temp4": "button15"
+            "跳跃": "Jump",
+            "疾影斩": "button1",
+            "魔剑奥义": "button2",
+            "瞬影三绝斩": "button3",
+            "呼啦圈": "button4",
+            "恶即斩": "button5",
+            "穿云破空剑": "button6",
+            "升龙剑": "button7",
+            "抓取": "button8",
+            "觉醒": "button9",
+            "上属性Buff": "button10",
+            "temp4": "button11",
+            "temp3": "button12",
+            "上Buff": "button13",
+            "连环斩": "button14",
+            "雷鸣千军破": "button15"
         }
 
     def control(self, hero_pos, image, boxs, MapNumber):
@@ -31,90 +32,79 @@ class Guiqi(Hero):
             if MapNumber == 0:
                 self.ctrl.reset()
                 time.sleep(wait)
-                self.skill("上增益")
-                time.sleep(1.0)
+                self.skill("上Buff")
+                time.sleep(1.2)
                 self.ctrl.move(330)
                 time.sleep(0.4)
                 self.ctrl.move(0)
                 time.sleep(0.8)
-                self.skill("鬼影剑")
-                time.sleep(0.5)
-                self.skill("地裂波动剑")
+                self.skill("恶即斩", 0.7)
+                time.sleep(1.2)
             elif MapNumber == 1:
                 time.sleep(wait)
-                self.ctrl.move(320)
-                time.sleep(0.5)
+                self.ctrl.move(220)
+                time.sleep(0.55)
+                self.ctrl.move(350)
+                time.sleep(0.3)
                 self.ctrl.move(0)
-                time.sleep(0.05)
-                self.skill("墓碑")
+                self.skill("雷鸣千军破")
+                time.sleep(1.2)
             elif MapNumber == 2:
                 time.sleep(wait)
-                self.ctrl.move(330)
-                time.sleep(0.3)
-                self.skill("爪子")
-                self.ctrl.move(0)
-                time.sleep(1)
-                self.skill("小炎剑")
+                time.sleep(2.0)
+                # self.skill("幻剑术")
+                # time.sleep(1)
+                self.skill("升龙剑")
             elif MapNumber == 3:
                 time.sleep(wait)
-                self.ctrl.move(340)
-                time.sleep(0.4)
-                self.skill("毒阵")
+                self.ctrl.move(320)
+                time.sleep(0.1)
+                self.skill("呼啦圈", 0.5)
                 time.sleep(0.5)
-                self.skill("减防")
             elif MapNumber == 4:
                 time.sleep(wait)
-                self.ctrl.move(145)
-                time.sleep(0.65)
+                self.ctrl.move(140)
+                time.sleep(0.8)
                 self.ctrl.move(1)
                 time.sleep(0.05)
-                self.skill("闪")
-                self.ctrl.move(180)
-                time.sleep(0.1)
-                self.skill("地裂波动剑")
+                self.skill("瞬影三绝斩")
+                time.sleep(0.5)
             elif MapNumber == 5:
                 time.sleep(wait)
-                self.ctrl.move(200)
-                time.sleep(0.7)
-                self.ctrl.move(1)
-                time.sleep(0.7)
                 self.ctrl.move(180)
-                time.sleep(0.05)
+                time.sleep(0.4)
+                self.skill("觉醒")
+                time.sleep(0.4)
                 self.skill("觉醒")
                 time.sleep(0.4)
                 self.skill("觉醒")
                 time.sleep(0.4)
-                self.skill("冰阵")
-                time.sleep(0.4)
-                self.skill("冰阵")
+                self.skill("觉醒")
             elif MapNumber == 6:
                 var = None
             elif MapNumber == 7:
                 time.sleep(wait)
                 self.ctrl.move(335)
-                time.sleep(0.4)
-                self.ctrl.move(1)
-                time.sleep(0.2)
-                self.skill("鬼影剑")
-                time.sleep(1)
-                self.skill("毒阵")
+                time.sleep(0.5)
+                self.skill("雷鸣千军破")
+                time.sleep(1.2)
             elif MapNumber == 8:
                 time.sleep(wait)
                 self.ctrl.move(340)
-                time.sleep(0.6)
-                self.ctrl.move(1)
+                time.sleep(0.2)
+                self.ctrl.move(0)
                 time.sleep(0.1)
-                self.skill("墓碑")
+                self.skill("呼啦圈", 1)
+                time.sleep(0.5)
             elif MapNumber == 9:
                 time.sleep(wait)
-                self.ctrl.move(350)
-                time.sleep(0.6)
+                self.ctrl.move(340)
+                time.sleep(0.5)
                 self.ctrl.move(0)
-                self.skill("冥炎剑")
-                time.sleep(0.7)
-                self.skill("地裂波动剑")
-                time.sleep(0.8)
-                self.skill("冰阵")
+                self.skill("恶即斩", 0.7)
+                time.sleep(2.0)
+                self.skill("瞬影三绝斩")
+                time.sleep(0.5)
             self.pre_room_num = MapNumber
             return 0
         else:
@@ -131,4 +121,4 @@ class Guiqi(Hero):
     #
     #################################################################################
     def get_auto_skill(self):
-        return ["月光闪"]
+        return ["疾影斩"]
