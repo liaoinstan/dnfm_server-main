@@ -54,12 +54,24 @@ class Hero:
         import json
         current_dir = os.path.dirname(os.path.abspath(__file__))
         self.dict = self.skillMap()
-        # file_path = os.path.join(current_dir, self.get_config_file())
-        # with open(file_path, 'r', encoding='utf-8') as file:
-        #     self.dict = json.load(file)  # 解析 JSON 文件
+        
+    def control(self, hero_pos, image, boxs, MapNumber):
+        # 首次进入房间释放预定技能
+        if self.pre_room_num != MapNumber:
+            self.action(MapNumber)
+            self.pre_room_num = MapNumber
+            return 0
+        else:
+            self.pre_room_num = MapNumber
+        # 预订技能释放后还有怪物，进行自动攻击
+        return self.control_auto(hero_pos, boxs)
 
     @abstractmethod
     def skillMap(self) -> List[str]:
+        pass
+    
+    @abstractmethod
+    def action(self, roomNum):
         pass
 
     @abstractmethod

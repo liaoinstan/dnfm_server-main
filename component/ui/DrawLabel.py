@@ -77,7 +77,8 @@ class DrawLabel(QLabel):
             self.frameTime = time.time()
         else:
             timeGap = int((time.time() - self.frameTime) * 1000)
-            self.fps = int(self.frameCount/timeGap*1000)
+            if timeGap != 0:
+                self.fps = int(self.frameCount/timeGap*1000)
         # 画布绘制
         if frame is not None:
             image = QImage(
@@ -118,6 +119,7 @@ class DrawLabel(QLabel):
         self.__drawMiniMap(painter)
         # 绘制模版匹配区域
         self.__drawMatchRect(painter)
+        # 绘制技能配置区域
         if self.drawButton:
             self.__drawButtons(painter, self.buttons)
 
@@ -366,11 +368,8 @@ class DrawLabel(QLabel):
         color = QColor('red')
         pen = QPen(color)
         pen.setWidth(lineWidth)
-        font = QFont('Arial', 8)
-        font.setWeight(QFont.Bold)
-        painter.setFont(font)
         scale = R.SCALE
-        jitter = int(JITTER*scale)
+        jitter = int(self.__valueframe2Label(JITTER*scale))
         for key, value in skillData.items():
             if key == "joystick":
                 radius = int(value["radius"]*scale)
@@ -385,10 +384,15 @@ class DrawLabel(QLabel):
             if skills is not None and key in skills.values():
                 key = key+'\n' + self._getKeyByValue(skills, key)
             # 绘制按钮区域
+            fontSize = self.__valueframe2Label(8)
+            font = QFont('Arial', fontSize)
+            font.setWeight(QFont.Bold)
+            painter.setFont(font)
             center = (int(value[0]*scale), int(value[1]*scale))
             textWidth, textHeight = self.__calcuText(painter, key)
-            textRect = (center[0]-textWidth//2, center[1]-textHeight-toDp(10), textWidth, textHeight)
-            textRect = QRect(*self.__framRect2labelRect(*textRect))
+            textRectStartPoint = (center[0]-textWidth//2, center[1]-textHeight-toDp(10))
+            textRectStartPoint = self.__framePiont2labelPoint(*textRectStartPoint)
+            textRect = QRect(*textRectStartPoint, textWidth, textHeight)
             center = self.__framePiont2labelPoint(*center)
             painter.setPen(pen)
             painter.setBrush(color)

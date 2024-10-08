@@ -4,7 +4,7 @@ from .hero import Hero
 
 class JianZong(Hero):
 
-    # 配置每个英雄的键位映射表
+    # 职业键位映射表
     def skillMap(self):
         return {
             "后跳": "Jump_Back",
@@ -26,91 +26,85 @@ class JianZong(Hero):
             "雷鸣千军破": "button15"
         }
 
-    def control(self, hero_pos, image, boxs, MapNumber):
-        if self.pre_room_num != MapNumber:
-            wait = 0.1
-            if MapNumber == 0:
-                self.ctrl.reset()
-                time.sleep(wait)
-                self.skill("上Buff")
-                time.sleep(1.2)
-                self.ctrl.move(330)
-                time.sleep(0.4)
-                self.ctrl.move(0)
-                time.sleep(0.8)
-                self.skill("恶即斩", 0.7)
-                time.sleep(1.2)
-            elif MapNumber == 1:
-                time.sleep(wait)
-                self.ctrl.move(220)
-                time.sleep(0.55)
-                self.ctrl.move(350)
-                time.sleep(0.3)
-                self.ctrl.move(0)
-                self.skill("雷鸣千军破")
-                time.sleep(1.2)
-            elif MapNumber == 2:
-                time.sleep(wait)
-                time.sleep(2.0)
-                # self.skill("幻剑术")
-                # time.sleep(1)
-                self.skill("升龙剑")
-            elif MapNumber == 3:
-                time.sleep(wait)
-                self.ctrl.move(320)
-                time.sleep(0.1)
-                self.skill("呼啦圈", 0.5)
-                time.sleep(0.5)
-            elif MapNumber == 4:
-                time.sleep(wait)
-                self.ctrl.move(140)
-                time.sleep(0.8)
-                self.ctrl.move(1)
-                time.sleep(0.05)
-                self.skill("瞬影三绝斩")
-                time.sleep(0.5)
-            elif MapNumber == 5:
-                time.sleep(wait)
-                self.ctrl.move(180)
-                time.sleep(0.4)
-                self.skill("觉醒")
-                time.sleep(0.4)
-                self.skill("觉醒")
-                time.sleep(0.4)
-                self.skill("觉醒")
-                time.sleep(0.4)
-                self.skill("觉醒")
-            elif MapNumber == 6:
-                var = None
-            elif MapNumber == 7:
-                time.sleep(wait)
-                self.ctrl.move(335)
-                time.sleep(0.5)
-                self.skill("雷鸣千军破")
-                time.sleep(1.2)
-            elif MapNumber == 8:
-                time.sleep(wait)
-                self.ctrl.move(340)
-                time.sleep(0.2)
-                self.ctrl.move(0)
-                time.sleep(0.1)
-                self.skill("呼啦圈", 1)
-                time.sleep(0.5)
-            elif MapNumber == 9:
-                time.sleep(wait)
-                self.ctrl.move(340)
-                time.sleep(0.5)
-                self.ctrl.move(0)
-                self.skill("恶即斩", 0.7)
-                time.sleep(2.0)
-                self.skill("瞬影三绝斩")
-                time.sleep(0.5)
-            self.pre_room_num = MapNumber
-            return 0
-        else:
-            self.pre_room_num = MapNumber
-        # 预订技能释放后还有怪物，进行自动攻击
-        return self.control_auto(hero_pos, boxs)
+    # 预设每个房间的行为
+    def action(self, MapNumber):
+        wait = 0.1
+        if MapNumber == 0:
+            self.ctrl.reset()
+            time.sleep(wait)
+            self.skill("上Buff")
+            time.sleep(1.2)
+            self.ctrl.move(330)
+            time.sleep(0.4)
+            self.ctrl.move(0)
+            time.sleep(0.8)
+            self.skill("恶即斩", 0.7)
+            time.sleep(1.2)
+        elif MapNumber == 1:
+            time.sleep(wait)
+            self.ctrl.move(220)
+            time.sleep(0.55)
+            self.ctrl.move(350)
+            time.sleep(0.3)
+            self.ctrl.move(0)
+            self.skill("雷鸣千军破")
+            time.sleep(1.2)
+        elif MapNumber == 2:
+            time.sleep(wait)
+            time.sleep(2.0)
+            # self.skill("幻剑术")
+            # time.sleep(1)
+            self.skill("升龙剑")
+        elif MapNumber == 3:
+            time.sleep(wait)
+            self.ctrl.move(320)
+            time.sleep(0.1)
+            self.skill("呼啦圈", 0.5)
+            time.sleep(0.5)
+        elif MapNumber == 4:
+            time.sleep(wait)
+            self.ctrl.move(140)
+            time.sleep(0.8)
+            self.ctrl.move(1)
+            time.sleep(0.05)
+            self.skill("瞬影三绝斩")
+            time.sleep(0.5)
+        elif MapNumber == 5:
+            time.sleep(wait)
+            self.ctrl.move(180)
+            time.sleep(0.4)
+            self.skill("觉醒")
+            time.sleep(0.4)
+            self.skill("觉醒")
+            time.sleep(0.4)
+            self.skill("觉醒")
+            time.sleep(0.4)
+            self.skill("觉醒")
+        elif MapNumber == 6:
+            var = None
+        elif MapNumber == 7:
+            time.sleep(wait)
+            self.ctrl.move(335)
+            time.sleep(0.5)
+            self.skill("雷鸣千军破")
+            time.sleep(1.2)
+        elif MapNumber == 8:
+            time.sleep(wait)
+            self.ctrl.move(340)
+            time.sleep(0.2)
+            self.ctrl.move(0)
+            time.sleep(0.1)
+            self.skill("呼啦圈", 1)
+            time.sleep(0.5)
+        elif MapNumber == 9:
+            time.sleep(wait)
+            self.ctrl.move(340)
+            time.sleep(0.5)
+            self.ctrl.move(0)
+            self.skill("恶即斩", 0.7)
+            time.sleep(2.0)
+            self.skill("瞬影三绝斩")
+            time.sleep(0.5)
 
     #################################################################################
     # 2024/9/15
