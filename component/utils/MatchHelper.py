@@ -18,7 +18,7 @@ def __resize_template(large_image, template_image):
     return cv2.resize(template_image, (int(template_image.shape[1]*caculRate), int(template_image.shape[0]*caculRate)))
 
 
-def match_template(large_image, template_image_path, threshold=0.7, area=None):
+def match_template(large_image, template_image_path, area=None, threshold=0.7):
     # 读取大图和模板图
     if large_image is None:
         print(f"无法获取屏幕")
@@ -38,6 +38,8 @@ def match_template(large_image, template_image_path, threshold=0.7, area=None):
         start_y = int(height * area[2])
         end_y = int(height * area[3])
         large_image = large_image[start_y:end_y, start_x:end_x]
+
+    # cv2.imwrite(f'test/{template_image_path.replace("/", "-")}', large_image)
 
     # 使用模板匹配方法查找匹配位置
     result = cv2.matchTemplate(large_image, template_image, cv2.TM_CCOEFF_NORMED)

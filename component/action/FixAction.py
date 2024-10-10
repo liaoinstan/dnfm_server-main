@@ -10,7 +10,8 @@ class FixAction(BaseAction):
     class Path(Enum):
         BACKPACK = 'fix/fix_backpack.jpg', (0.5, 0.8, 0, 0.33)
         BACKPACK_OVER = 'fix/fix_backpack_over.jpg', (0.5, 0.8, 0, 0.33)
-        FIX_IRON_FELT = 'fix/fix_iron_felt.jpg', (0.33, 0, 66, 0, 8, 1)
+        FIX_IRON_FELT = 'fix/fix_iron_felt.jpg', (0.33, 0.66, 0.8, 1)
+        FIX_CHECK_CDZB = 'fix/fix_check_cdzb.jpg', (0, 0.5, 0.66, 1)
         FIX_BTN_XL = 'fix/fix_btn_xl.jpg', (0.5, 1, 0.66, 1)
         FIX_CLOSE = 'fix/fix_close.jpg', (0.66, 1, 0, 0.25)
         FIX_BACK = 'fix/fix_back.jpg', (0, 0.25, 0, 0.25)
@@ -64,20 +65,28 @@ class FixAction(BaseAction):
                 self.step = 2
             time.sleep(0.3)
         elif self.step == 2:
+            resultCheckCDZB = self.match(image, FixAction.Path.FIX_CHECK_CDZB)
+            if resultCheckCDZB:
+                self.click(resultCheckCDZB)
+                time.sleep(random.uniform(0.8, 1.2))
+            else:
+                time.sleep(0.5)
+            self.step = 3
+        elif self.step == 3:
             resultBtnXl = self.match(image, FixAction.Path.FIX_BTN_XL)
             if resultBtnXl:
                 self.click(resultBtnXl)
                 time.sleep(random.uniform(0.8, 1.2))
-                self.step = 3
+                self.step = 4
             time.sleep(0.3)
-        elif self.step == 3:
+        elif self.step == 4:
             resultFixClose = self.match(image, FixAction.Path.FIX_CLOSE)
             if resultFixClose:
                 self.click(resultFixClose)
                 time.sleep(random.uniform(0.8, 1.2))
-                self.step = 4
+                self.step = 5
             time.sleep(1)
-        elif self.step == 4:
+        elif self.step == 5:
             resultBack = self.match(image, FixAction.Path.FIX_BACK)
             if resultBack:
                 self.click(resultBack)

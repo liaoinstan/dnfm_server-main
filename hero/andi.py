@@ -5,7 +5,10 @@ from .hero import Hero
 
 
 class Andi(Hero):
-
+    '''
+    暗帝
+    还没写好,复制的奶妈的行为
+    '''
     # 职业键位映射表
     def skillMap(self):
         return {

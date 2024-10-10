@@ -11,17 +11,17 @@ class BaseAction:
         "fix/fix_btn_xl.jpg" : [(cx,cy,w,h),(cx,cy,w,h)]
     }
     '''
-    
+
     def __init__(self, ctrl, matchResultMap: dict):
-        self.ctrl:GameControl = ctrl
+        self.ctrl: GameControl = ctrl
         self.matchResultMap = matchResultMap
-        
+
     @abstractmethod
     def getPathEnum(self):
         pass
-    
+
     def match(self, image, enum, showRect=True):
-        result = MatchHelper.match_template(image, enum.path)
+        result = MatchHelper.match_template(image, enum.path, area=enum.area)
         if showRect and result is not None:
             self.updateMatchResultMap({enum.path: [result]})
         else:
@@ -33,7 +33,7 @@ class BaseAction:
         点击一个匹配结果对应的区域中心位置
         '''
         self.ctrl.click(result[0], result[1], convert=False)
-        
+
     def updateMatchResultMap(self, resultMap: dict):
         '''
         把匹配结果显示到屏幕上
@@ -43,7 +43,7 @@ class BaseAction:
                 self.matchResultMap[enum.path] = resultMap[enum.path]
             else:
                 self.matchResultMap.pop(enum.path, None)
-                
+
     def removeAllResults(self):
         '''
         从屏幕上异常所有匹配结果

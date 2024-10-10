@@ -98,8 +98,7 @@ class DrawLabel(QLabel):
         pixmap = self.pixmap()
         if pixmap is None:
             return
-        if self.pixRect is None:
-            self.__calcuPixRect()
+        self.__calcuPixRect()
         if self.mousePointTimeOut != 0 and int((time.time() - self.mousePointTimeOut) * 1000) > 2000:
             self.mousePosition = None
 

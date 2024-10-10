@@ -113,7 +113,7 @@ class Naima(Hero):
             self.skill("胜利之矛")
             time.sleep(0.5)
             self.ctrl.move(1)
-            time.sleep(1.5)
+            time.sleep(1.2)
             self.skill("光明惩戒")
         elif MapNumber == 9:
             time.sleep(wait)

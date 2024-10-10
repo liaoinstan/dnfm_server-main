@@ -15,7 +15,7 @@ class GoToWorkAction(BaseAction):
         WT = 'way_to_bwj/wt.jpg', (0.8, 1, 0, 1)
         MAP_TAB = 'way_to_bwj/map_tab.jpg', (0, 0.33, 0, 0.33)
         MAP_WNXS = 'way_to_bwj/map_wnxs.jpg', (0.33, 0.66, 0, 0.25)
-        SELECT_MX = 'way_to_bwj/select_mx.jpg', (0, 0.25, 0, 0.25)
+        SELECT_MX = 'way_to_bwj/select_mx.jpg', (0, 0.25, 0, 0.33)
         SELECT_BWJ = 'way_to_bwj/select_bwj.jpg', (0.5, 1, 0.5, 1)
         SELECT_START = 'way_to_bwj/select_start.jpg', (0.66, 1, 0.66, 1)
         LOADING = 'way_to_bwj/loading.jpg', None
