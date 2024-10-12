@@ -16,6 +16,32 @@ class GameControl:
         self.attack_touch = "none"
         self.pos = [0, 0]
         self.last_move = [self.config['joystick']['center'][0], self.config['joystick']['center'][1]]
+        self.move_timeOut = 0
+
+    def move(self, angle: int):
+        # 计算轮盘x, y坐标
+        x, y = self.calc_mov_point(angle)
+        if angle == 0:
+            if self.move_touch == "none":
+                return
+            self.move_touch = "none"
+            self.move_timeOut = 0
+            self.adb.touch_up(self.last_move[0], self.last_move[1], 1)
+            return
+        else:
+            if self.move_touch == "none":
+                self.move_touch = "start"
+                self.move_timeOut = time.time()
+                self.adb.touch_down(x, y, 1)
+                self.last_move = [x, y]
+            else:
+                if self.move_timeOut != 0 and time.time() - self.move_timeOut > 60:
+                    print("\n手势超时,重置move手势")
+                    self.move(0)
+                    return
+                self.move_touch = "move"
+                self.adb.touch_move(x, y, 1)
+                self.last_move = [x, y]
 
     def calc_mov_point(self, angle: int) -> Tuple[int, int]:
         rx, ry = (int(self.config['joystick']['center'][0]), int(self.config['joystick']['center'][1]))
@@ -28,25 +54,6 @@ class GameControl:
         x = rx + r * math.cos(angle * math.pi / 180)
         y = ry - r * math.sin(angle * math.pi / 180)
         return int(x), int(y)
-
-    def move(self, angle: int):
-        # 计算轮盘x, y坐标
-        x, y = self.calc_mov_point(angle)
-        if angle == 0:
-            if self.move_touch == "none":
-                return
-            self.move_touch = "none"
-            self.adb.touch_up(self.last_move[0], self.last_move[1], 1)
-            return
-        else:
-            if self.move_touch == "none":
-                self.move_touch = "start"
-                self.adb.touch_down(x, y, 1)
-                self.last_move = [x, y]
-            else:
-                self.move_touch = "move"
-                self.adb.touch_move(x, y, 1)
-                self.last_move = [x, y]
 
     def attack(self, flag: bool = True):
         if flag == False:
@@ -135,9 +142,8 @@ class GameControl:
             x, y = self._ramdon_xy(x, y)
         self.adb.touch_down(x, y, convert=convert)
         time.sleep(t)
-        if ramdon:
-            x, y = self._ramdon_xy(x, y)
         self.adb.touch_up(x, y, convert=convert)
+        
 
     def reset(self):
         self.move(0)

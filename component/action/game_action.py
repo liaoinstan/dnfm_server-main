@@ -240,10 +240,10 @@ class GameAction:
 
     def start(self):
         self.stop_event = False
-        
+
     def stop(self):
         self.stop_event = True
-        
+
     def quit(self):
         self.thread_run = True
 
@@ -264,6 +264,7 @@ class GameAction:
         self.changeHeroAction.stop()
         self.againAction.stop()
         self.advertAction.stop()
+        self.fixAction.start()
 
         self.thread.start()
 
@@ -423,7 +424,7 @@ class GameAction:
             if len(monster) > 0:
                 outprint = '有怪物'
                 angle = self.control_attack.control(hero_track[0], image, boxs, self.room_num)
-                self.blockerAction.updatTimerWhenRoomTimeOut()
+                self.blockerAction.updatTimerWhenRoomTimeOut(self.room_num)
             elif len(equipment) > 0:
                 outprint = '有材料'
                 if len(gate) > 0:
@@ -435,7 +436,7 @@ class GameAction:
                     angle = calculate_point_to_box_angle(hero_track[0], close_item)
                 self.ctrl.attack(False)
                 self.ctrl.move(angle)
-                self.blockerAction.updatTimerWhenRoomTimeOut()
+                self.blockerAction.updatTimerWhenRoomTimeOut(self.room_num)
             elif len(gate) > 0:
                 outprint = '有门'
                 if direction == 9:  # 左门

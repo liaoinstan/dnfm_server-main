@@ -58,7 +58,7 @@ def match_template(large_image, template_image_path, area=None, threshold=0.7):
         top_left = max_loc
         center_x = top_left[0] + w // 2
         center_y = top_left[1] + h // 2
-        return center_x, center_y, w, h
+        return center_x, center_y, w, h, max_val
     else:
         return None
 
