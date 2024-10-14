@@ -331,7 +331,7 @@ class DrawLabel(QLabel):
 
     def __drawMapPoints(self, painter: QPainter):
         def drawCircle(cx, cy, r):
-            painter.drawEllipse(cx - r, cy - r, 2 * r, 2 * r)
+            painter.drawEllipse(int(cx - r), int(cy - r), 2 * r, 2 * r)
 
         color = QColor('red')
         painter.setPen(color)
