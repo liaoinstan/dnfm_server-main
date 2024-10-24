@@ -65,14 +65,14 @@ class FixAction(BaseAction):
                     self.click(resultBackpackOver)
                     time.sleep(random.uniform(0.8, 1.2))
                     self.step = 1
-            time.sleep(0.3)
+            time.sleep(0.5)
         elif self.step == 1:
             resultIronFelt = self.match(image, FixAction.Path.FIX_IRON_FELT)
             if resultIronFelt:
                 self.click(resultIronFelt)
                 time.sleep(random.uniform(0.8, 1.2))
                 self.step = 2
-            time.sleep(0.3)
+            time.sleep(0.5)
         elif self.step == 2:
             resultCheckCDZB = self.match(image, FixAction.Path.FIX_CHECK_CDZB)
             if resultCheckCDZB:
@@ -87,7 +87,7 @@ class FixAction(BaseAction):
                 self.click(resultBtnXl)
                 time.sleep(random.uniform(0.8, 1.2))
                 self.step = 4
-            time.sleep(0.3)
+            time.sleep(0.5)
         elif self.step == 4:
             resultFixClose = self.match(image, FixAction.Path.FIX_CLOSE)
             if resultFixClose:
@@ -100,6 +100,7 @@ class FixAction(BaseAction):
         elif 5 < self.step < 6:
             self.__actionFJ(image)
         elif self.step == 6:
+            time.sleep(0.8)
             print("关闭背包")
             resultBack = self.match(image, FixAction.Path.FIX_BACK)
             if resultBack:
@@ -117,7 +118,7 @@ class FixAction(BaseAction):
                 self.click(result)
                 time.sleep(1.5)
                 self.step = 4.2
-            time.sleep(0.3)
+            time.sleep(0.5)
         elif self.step == 4.2:
             resultChecklan = self.match(image, FixAction.Path.FIX_CHECK_LAN, threshold=0.85)
             if resultChecklan:
@@ -134,7 +135,7 @@ class FixAction(BaseAction):
                 else:
                     print("紫色已勾选")
                     self.step = 4.3
-            time.sleep(0.3)
+            time.sleep(0.5)
         elif self.step == 4.3:
             resultFixSale = self.match(image, FixAction.Path.FIX_SALE)
             if resultFixSale:
@@ -142,7 +143,7 @@ class FixAction(BaseAction):
                 self.click(resultFixSale)
                 time.sleep(1.5)
                 self.step = 4.4
-            time.sleep(0.3)
+            time.sleep(0.5)
         elif self.step == 4.4:
             resultYes = self.match(image, FixAction.Path.COM_YES)
             if resultYes:
@@ -152,7 +153,7 @@ class FixAction(BaseAction):
             else:
                 print("准备关闭出售页面")
                 self.step = 4.5
-            time.sleep(0.3)
+            time.sleep(0.5)
         elif self.step == 4.5:
             # 右上角的'X'
             resultFixClose = self.match(image, FixAction.Path.FIX_CLOSE)
@@ -171,7 +172,7 @@ class FixAction(BaseAction):
                 self.click(result)
                 time.sleep(1.5)
                 self.step = 5.2
-            time.sleep(0.3)
+            time.sleep(0.5)
         elif self.step == 5.2:
             resultCheckBai = self.match(image, FixAction.Path.FIX_CHECK_BAI, threshold=0.85)
             if resultCheckBai:
@@ -181,7 +182,7 @@ class FixAction(BaseAction):
             else:
                 print("白装已勾选")
                 self.step = 5.3
-            time.sleep(0.3)
+            time.sleep(0.5)
         elif self.step == 5.3:
             result = self.match(image, FixAction.Path.FIX_FJ)
             if result:
@@ -189,7 +190,7 @@ class FixAction(BaseAction):
                 self.click(result)
                 time.sleep(1.5)
                 self.step = 5.4
-            time.sleep(0.3)
+            time.sleep(0.5)
         elif self.step == 5.4:
             resultYes = self.match(image, FixAction.Path.COM_YES)
             if resultYes:
@@ -199,7 +200,7 @@ class FixAction(BaseAction):
             else:
                 print("准备关闭分解页面")
                 self.step = 5.5
-            time.sleep(0.3)
+            time.sleep(0.5)
         elif self.step == 5.5:
             # 右上角的'X'
             resultFixClose = self.match(image, FixAction.Path.FIX_CLOSE)

@@ -44,6 +44,9 @@ class ChangeHeroAction(BaseAction):
     def reset(self):
         self.step = 0
         self.checkTagsCount = -1
+        
+    # def onHeroSelected(self):
+        
 
     def actionChangeHero(self, image):
         if not self.runing:

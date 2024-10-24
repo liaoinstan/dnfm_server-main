@@ -31,7 +31,7 @@ class ActionManager:
         self.fixAction = fixAction
         self.againAction = againAction
         self.advertAction = advertAction
-        
+
     def reset(self):
         self.matchStartTimes = 0
 
@@ -59,7 +59,7 @@ class ActionManager:
             self.changeHeroAction.start(2)
         else:
             self.matchStartTimes += 1
-            if self.matchStartTimes <=3:
+            if self.matchStartTimes <= 3:
                 timer = QTimer()
                 timer.singleShot(500, self.start)
             else:
@@ -69,7 +69,6 @@ class ActionManager:
                 self.goToWorkAction.stop()
                 self.changeHeroAction.stop()
                 return
-            
 
     def stopAllAction(self):
         self.goToWorkAction.stop()

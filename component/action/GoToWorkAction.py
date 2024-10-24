@@ -69,7 +69,7 @@ class GoToWorkAction(BaseAction):
             else:
                 if self.timeOut == 0:
                     self.timeOut = time.time()
-            time.sleep(0.3)
+            time.sleep(0.5)
         if self.step == 0:
             resultMapWnxs = self.match(image, GoToWorkAction.Path.MAP_WNXS)
             if resultMapWnxs:
@@ -81,7 +81,7 @@ class GoToWorkAction(BaseAction):
                 if resultMapTab:
                     self.click(resultMapTab)
                     time.sleep(random.uniform(0.8, 1.2))
-            time.sleep(0.3)
+            time.sleep(0.5)
         elif self.step == 1:
             print("正在前往布万加")
             resultSelectMX = self.match(image, GoToWorkAction.Path.SELECT_MX)
@@ -98,7 +98,7 @@ class GoToWorkAction(BaseAction):
                 self.click(resultSelectBwj)
                 time.sleep(random.uniform(0.8, 1.2))
                 self.step = 3
-            time.sleep(0.3)
+            time.sleep(0.5)
         elif self.step == 3:
             resultSelectStart = self.match(image, GoToWorkAction.Path.SELECT_START)
             if resultSelectStart:
@@ -106,7 +106,7 @@ class GoToWorkAction(BaseAction):
                 self.click(resultSelectStart)
                 time.sleep(0.5)
                 self.step = 4
-            time.sleep(0.3)
+            time.sleep(0.5)
         elif self.step == 4:
             resultLoading = self.match(image, GoToWorkAction.Path.LOADING, showRect=False)
             if resultLoading:
