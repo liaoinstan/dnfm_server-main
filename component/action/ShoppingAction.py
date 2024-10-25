@@ -47,18 +47,45 @@ class ShoppingAction(BaseAction):
         if not self.runing:
             return False
         if self.step == 0:
-            resultSetting = self.match(image, ShoppingAction.Path.HERO_SETTING)
-            if resultSetting:
-                self.click(resultSetting)
+            result = self.match(image, ShoppingAction.Path.SHOPPING_ENTER)
+            if result:
+                self.click(result)
                 time.sleep(random.uniform(0.8, 1.2))
                 self.step = 1
-            time.sleep(0.3)
+            time.sleep(0.5)
         elif self.step == 1:
-            resultChange = self.match(image, ShoppingAction.Path.HERO_CHANGE)
-            if resultChange:
-                self.click(resultChange)
+            x1, y1 = R.DEVICE_WIDTH*0.15, R.DEVICE_HEIGHT*0.6
+            x2, y2 = R.DEVICE_WIDTH*0.15, R.DEVICE_HEIGHT*0.4
+            self.ctrl.adb.touch_swipe(x1, y1, x2, y2, 10, 0.5)
+            time.sleep(random.uniform(0.8, 1.2))
+            result = self.match(image, ShoppingAction.Path.SHOPPING_STAR)
+            if result:
+                self.click(result)
                 time.sleep(random.uniform(0.8, 1.2))
                 self.step = 2
-            time.sleep(0.3)
-
+            else:
+                time.sleep(1)
+        elif self.step == 2:
+            result = self.match(image, ShoppingAction.Path.SHOPPING_BUY)
+            if result:
+                self.click(result)
+                time.sleep(random.uniform(0.8, 1.2))
+                self.step = 3
+            time.sleep(0.8)
+        elif self.step == 3:
+            result = self.match(image, ShoppingAction.Path.COM_YES)
+            if result:
+                self.click(result)
+                time.sleep(random.uniform(1.2, 1.5))
+            else:
+                self.step = 4
+                time.sleep(1)
+        elif self.step == 4:
+            result = self.match(image, ShoppingAction.Path.SHOPPING_EXIT)
+            if result:
+                self.click(result)
+                time.sleep(random.uniform(0.8, 1.2))
+                print("购买完毕,退出商城")
+                self.stop()
+            time.sleep(0.5)
         return True
