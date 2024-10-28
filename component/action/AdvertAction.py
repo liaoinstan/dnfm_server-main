@@ -5,7 +5,6 @@ import time
 from component.action.BaseAction import BaseAction
 from enum import Enum
 from config import CENTER_POINT
-from component.action.ActionManager import actionManager
 
 
 class AdvertAction(BaseAction):
@@ -28,6 +27,7 @@ class AdvertAction(BaseAction):
         super().__init__(ctrl, matchResultMap)
         self.runing = False
         self.count = 0
+        self.onAdvertClearedCallback = None
 
     def start(self):
         self.runing = True
@@ -35,6 +35,9 @@ class AdvertAction(BaseAction):
     def stop(self):
         self.removeAllResults()
         self.runing = False
+        
+    def onAdvertCleared(self, onAdvertClearedCallback):
+        self.onAdvertClearedCallback = onAdvertClearedCallback
 
     def actionCloseAdvert(self, image):
         if not self.runing:
@@ -55,7 +58,8 @@ class AdvertAction(BaseAction):
                 self.stop()
                 print("活动广告清除完毕")
                 # 活动广告清除完毕，开始上班
-                actionManager.goToWorkAction.start()
+                if self.onAdvertClearedCallback:
+                    self.onAdvertClearedCallback()
 
         if resultClose:
             print("检测到活动广告弹窗，关闭。")

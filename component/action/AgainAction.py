@@ -6,7 +6,6 @@ from component.action.BaseAction import BaseAction
 from enum import Enum
 from config import CENTER_POINT
 import component.utils.RuntimeData as R
-from component.action.ActionManager import actionManager
 
 
 class AgainAction(BaseAction):
@@ -75,6 +74,7 @@ class AgainAction(BaseAction):
                         self.stop()
                         time.sleep(0.3)
                         # 重新开启下一轮角色检查
+                        from component.action.ActionManager import actionManager
                         actionManager.start()
 
         if self.step == 0:

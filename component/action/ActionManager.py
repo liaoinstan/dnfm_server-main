@@ -3,7 +3,12 @@ import component.utils.MatchHelper as MatchHelper
 import component.utils.RuntimeData as R
 from PyQt5.QtCore import QTimer
 from component.utils.EventManager import eventManager
-
+from component.action.ChangeHeroAction import ChangeHeroAction
+from component.action.AdvertAction import AdvertAction
+from component.action.GoToWorkAction import GoToWorkAction
+from component.action.FixAction import FixAction
+from component.action.AgainAction import AgainAction
+from component.action.ShoppingAction import ShoppingAction
 
 class ActionManager:
 
@@ -17,20 +22,26 @@ class ActionManager:
     '''
 
     def __init__(self):
-        self.goToWorkAction = None
-        self.changeHeroAction = None
-        self.fixAction = None
-        self.againAction = None
-        self.advertAction = None
+        self.goToWorkAction:GoToWorkAction = None
+        self.changeHeroAction:ChangeHeroAction = None
+        self.fixAction:FixAction = None
+        self.againAction:AgainAction = None
+        self.advertAction:AdvertAction = None
+        self.shoppingAction:ShoppingAction = None
         self.image = None
         self.matchStartTimes = 0
 
-    def init(self, goToWorkAction, changeHeroAction, fixAction, againAction, advertAction):
+    def init(self, goToWorkAction, changeHeroAction, fixAction, againAction, advertAction, shoppingAction):
         self.goToWorkAction = goToWorkAction
         self.changeHeroAction = changeHeroAction
         self.fixAction = fixAction
         self.againAction = againAction
         self.advertAction = advertAction
+        self.shoppingAction = shoppingAction
+        
+        self.changeHeroAction.onHeroChanged(lambda: self.advertAction.start())
+        self.advertAction.onAdvertCleared(lambda:self.shoppingAction.start())
+        self.shoppingAction.onShoppingEnd(lambda:self.goToWorkAction.start())
 
     def reset(self):
         self.matchStartTimes = 0

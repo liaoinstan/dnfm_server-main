@@ -5,8 +5,6 @@ from component.action.BaseAction import BaseAction
 from enum import Enum
 from config import CENTER_POINT
 import component.utils.RuntimeData as R
-from component.action.ActionManager import actionManager
-
 
 class GoToWorkAction(BaseAction):
 

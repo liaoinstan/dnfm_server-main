@@ -17,6 +17,7 @@ from component.action.ChangeHeroAction import ChangeHeroAction
 from component.action.AdvertAction import AdvertAction
 from component.action.AgainAction import AgainAction
 from component.action.BlockAction import BlockAction
+from component.action.ShoppingAction import ShoppingAction
 from component.action.ActionManager import actionManager
 import component.utils.RuntimeData as R
 import component.utils.MatchHelper as MatchHelper
@@ -236,7 +237,8 @@ class GameAction:
         self.againAction = AgainAction(self.ctrl, self.matchResultMap)
         self.advertAction = AdvertAction(self.ctrl, self.matchResultMap)
         self.blockerAction = BlockAction(self.ctrl)
-        actionManager.init(self.goToWorkAction, self.changeHeroAction, self.fixAction, self.againAction, self.advertAction)
+        self.shoppingAction = ShoppingAction(self.ctrl, self.matchResultMap)
+        actionManager.init(self.goToWorkAction, self.changeHeroAction, self.fixAction, self.againAction, self.advertAction, self.shoppingAction)
 
     def start(self):
         self.stop_event = False
@@ -312,6 +314,8 @@ class GameAction:
             if self.fixAction.actionFix(image):
                 continue
             if self.againAction.actionAgain(image):
+                continue
+            if self.shoppingAction.actionShopping(image):
                 continue
 
             # 检测是否通关

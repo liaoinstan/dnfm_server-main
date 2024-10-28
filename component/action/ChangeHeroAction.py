@@ -5,7 +5,6 @@ import time
 from component.action.BaseAction import BaseAction
 from enum import Enum
 import component.utils.RuntimeData as R
-from component.action.ActionManager import actionManager
 from component.utils.EventManager import eventManager
 
 
@@ -30,6 +29,7 @@ class ChangeHeroAction(BaseAction):
         self.runing = False
         self.step = 0
         self.checkTagsCount = -1
+        self.onHeroChangedCallback = None
 
     def start(self, step=0):
         self.reset()
@@ -45,8 +45,8 @@ class ChangeHeroAction(BaseAction):
         self.step = 0
         self.checkTagsCount = -1
         
-    # def onHeroSelected(self):
-        
+    def onHeroChanged(self, onHeroChangedCallback):
+        self.onHeroChangedCallback = onHeroChangedCallback
 
     def actionChangeHero(self, image):
         if not self.runing:
@@ -108,7 +108,9 @@ class ChangeHeroAction(BaseAction):
                 time.sleep(random.uniform(3, 4))
                 self.stop()
                 # 切换英雄完成，检查页面活动广告
-                actionManager.advertAction.start()
+                # actionManager.advertAction.start()
+                if self.onHeroChangedCallback:
+                    self.onHeroChangedCallback()
 
         return True
 

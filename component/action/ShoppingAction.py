@@ -5,7 +5,6 @@ import time
 from component.action.BaseAction import BaseAction
 from enum import Enum
 import component.utils.RuntimeData as R
-from component.action.ActionManager import actionManager
 from component.utils.EventManager import eventManager
 
 
@@ -29,6 +28,7 @@ class ShoppingAction(BaseAction):
         super().__init__(ctrl, matchResultMap)
         self.runing = False
         self.step = 0
+        self.onShoppingEndCallback = None
 
     def start(self, step=0):
         self.reset()
@@ -42,6 +42,9 @@ class ShoppingAction(BaseAction):
 
     def reset(self):
         self.step = 0
+        
+    def onShoppingEnd(self, onShoppingEndCallback):
+        self.onShoppingEndCallback = onShoppingEndCallback
 
     def actionShopping(self, image):
         if not self.runing:
@@ -54,9 +57,9 @@ class ShoppingAction(BaseAction):
                 self.step = 1
             time.sleep(0.5)
         elif self.step == 1:
-            x1, y1 = R.DEVICE_WIDTH*0.15, R.DEVICE_HEIGHT*0.6
-            x2, y2 = R.DEVICE_WIDTH*0.15, R.DEVICE_HEIGHT*0.4
-            self.ctrl.adb.touch_swipe(x1, y1, x2, y2, 10, 0.5)
+            x1, y1 = R.DEVICE_WIDTH*0.1, R.DEVICE_HEIGHT*0.6
+            x2, y2 = R.DEVICE_WIDTH*0.1, R.DEVICE_HEIGHT*0.4
+            self.ctrl.adb.touch_swipe(x1, y1, x2, y2, 10, 0.05)
             time.sleep(random.uniform(0.8, 1.2))
             result = self.match(image, ShoppingAction.Path.SHOPPING_STAR)
             if result:
@@ -87,5 +90,7 @@ class ShoppingAction(BaseAction):
                 time.sleep(random.uniform(0.8, 1.2))
                 print("购买完毕,退出商城")
                 self.stop()
+                if self.onShoppingEndCallback:
+                    self.onShoppingEndCallback()
             time.sleep(0.5)
         return True
