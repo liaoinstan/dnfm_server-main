@@ -5,17 +5,17 @@ import time
 from component.action.BaseAction import BaseAction
 from enum import Enum
 import component.utils.RuntimeData as R
-from component.utils.EventManager import eventManager
 
 
 class ShoppingAction(BaseAction):
 
     class Path(Enum):
-        SHOPPING_ENTER = 'shopping/shopping_enter.jpg', None
-        SHOPPING_STAR = 'shopping/shopping_star.jpg', None
-        SHOPPING_BUY = 'shopping/shopping_buy.jpg', None
-        SHOPPING_EXIT = 'shopping/shopping_exit.jpg', None
-        COM_YES = 'common/com_yes.jpg', None
+        SHOPPING_ENTER = 'shopping/shopping_enter.jpg', (0.6, 0.9, 0, 0.3)
+        SHOPPING_STAR = 'shopping/shopping_star.jpg', (0, 0.25, 0.5, 1)
+        SHOPPING_BUY = 'shopping/shopping_buy.jpg', (0.66, 1, 0.66, 1)
+        SHOPPING_EXIT = 'shopping/shopping_exit.jpg', (0, 0.25, 0, 0.25)
+        COM_YES = 'common/com_yes.jpg', (0.33, 0.8, 0.5, 0.9)
+        WT = 'way_to_bwj/wt.jpg', (0.8, 1, 0, 1)
 
         def __init__(self, path, area):
             self.path = path
@@ -84,13 +84,17 @@ class ShoppingAction(BaseAction):
                 self.step = 4
                 time.sleep(1)
         elif self.step == 4:
-            result = self.match(image, ShoppingAction.Path.SHOPPING_EXIT)
-            if result:
-                self.click(result)
-                time.sleep(random.uniform(0.8, 1.2))
-                print("购买完毕,退出商城")
+            resultWT = self.match(image, ShoppingAction.Path.WT)
+            if resultWT:
+                time.sleep(0.5)
                 self.stop()
+                print("购买完毕,退出商城")
                 if self.onShoppingEndCallback:
                     self.onShoppingEndCallback()
+            else:
+                resultExit = self.match(image, ShoppingAction.Path.SHOPPING_EXIT)
+                if resultExit:
+                    self.click(resultExit)
+                    time.sleep(0.8)
             time.sleep(0.5)
         return True

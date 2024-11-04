@@ -21,6 +21,7 @@ from component.action.ShoppingAction import ShoppingAction
 from component.action.ActionManager import actionManager
 import component.utils.RuntimeData as R
 import component.utils.MatchHelper as MatchHelper
+from component.utils.EventManager import eventManager
 from hero.hero import Hero
 from config import REPAIR_TIMES, WORKERS
 
@@ -239,6 +240,7 @@ class GameAction:
         self.blockerAction = BlockAction(self.ctrl)
         self.shoppingAction = ShoppingAction(self.ctrl, self.matchResultMap)
         actionManager.init(self.goToWorkAction, self.changeHeroAction, self.fixAction, self.againAction, self.advertAction, self.shoppingAction)
+        eventManager.subscribe('HOME_EVENT', self.onHomeEvent)
 
     def start(self):
         self.stop_event = False
@@ -259,6 +261,7 @@ class GameAction:
         self.thread_run = True
         self.thread = threading.Thread(target=self.control)  # 创建线程，并指定目标函数
         self.thread.daemon = True  # 设置为守护线程（可选）
+        self.isFinish = False
         self.blockerAction.resetTimer()
         self.blockerAction.resetRoomTimer()
         self.goToWorkAction.stop()
@@ -267,8 +270,11 @@ class GameAction:
         self.againAction.stop()
         self.advertAction.stop()
         self.fixAction.start()
-
         self.thread.start()
+        
+    def onHomeEvent(self):
+        print("重置副本")
+        self.isFinish = False
 
     def convertDirection(self, dNum: int):
         if dNum == 8:

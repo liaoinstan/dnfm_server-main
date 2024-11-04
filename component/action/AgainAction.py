@@ -6,6 +6,7 @@ from component.action.BaseAction import BaseAction
 from enum import Enum
 from config import CENTER_POINT
 import component.utils.RuntimeData as R
+from component.utils.EventManager import eventManager
 
 
 class AgainAction(BaseAction):
@@ -73,6 +74,7 @@ class AgainAction(BaseAction):
                         print("回到城镇")
                         self.stop()
                         time.sleep(0.3)
+                        eventManager.publish('HOME_EVENT')
                         # 重新开启下一轮角色检查
                         from component.action.ActionManager import actionManager
                         actionManager.start()
