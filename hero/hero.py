@@ -35,6 +35,9 @@ class Hero:
             elif heroJob == "剑宗":
                 from hero.jianzong import JianZong
                 hero = JianZong(ctrl)
+            elif heroJob == "阿修罗":
+                from hero.axiuluo import Axiuluo
+                hero = Axiuluo(ctrl)
             else:
                 hero = None
             if hero:
